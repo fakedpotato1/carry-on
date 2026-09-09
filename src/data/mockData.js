@@ -11,11 +11,29 @@ export const project = {
   id: 'urban-heat', title: 'Urban Heat & Student Wellbeing', module: 'ENV2104 · Research Methods', type: 'Report',
   deadline: '18 Sep 2026, 11:59 PM', daysLeft: 12, progress: 68, atRisk: false,
   document: 'Urban Heat Group Report — Working Draft', repository: 'loadshift-team/urban-heat-analysis',
+  description: 'Investigating the impact of urban heat on student wellbeing and proposing data-driven solutions for a healthier campus environment.',
+  tagline: 'Healthier students, greener tomorrows.',
+  documents: [
+    { type: 'pdf', name: 'Literature Review.pdf' },
+    { type: 'doc', name: 'Working Draft.docx' },
+    { type: 'sheet', name: 'Temperature Data.xlsx' },
+    { type: 'drive', name: 'Shared Drive' },
+    { type: 'doc', name: 'Survey Notes.docx' },
+  ],
 }
 
 export const projects = [
   project,
-  { id: 'campus-mobility', title: 'Campus Mobility API', module: 'SWE2202 · Software Studio', type: 'Coding', deadline: '28 Sep 2026, 11:59 PM', progress: 34, daysLeft: 21, atRisk: true },
+  {
+    id: 'campus-mobility', title: 'Campus Mobility API', module: 'SWE2202 · Software Studio', type: 'Coding', deadline: '28 Sep 2026, 11:59 PM', progress: 34, daysLeft: 21, atRisk: true,
+    description: 'Developing an API prototype to improve campus mobility through real-time data and route optimization.',
+    tagline: 'Smarter mobility, brighter campus.',
+    documents: [
+      { type: 'pdf', name: 'API Spec.pdf' },
+      { type: 'doc', name: 'Design Notes.docx' },
+      { type: 'code', name: 'GitHub Repo' },
+    ],
+  },
 ]
 
 export const dashboardOverview = { totalProjectSlots: 5, dueThisWeek: 1 }

@@ -7,6 +7,7 @@ import EvidencePack from './pages/EvidencePack'
 import LecturerEmail from './pages/LecturerEmail'
 import ProjectCanvas from './pages/ProjectCanvas'
 import Profile from './pages/Profile'
+import Projects from './pages/Projects'
 import RubricEvaluation from './pages/RubricEvaluation'
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="calendar" element={<Calendar />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="projects" element={<Projects />} />
         <Route path="project/new" element={<CreateProject />} />
         <Route path="project/:id/canvas" element={<ProjectCanvas />} />
         <Route path="project/:id/evidence" element={<EvidencePack />} />

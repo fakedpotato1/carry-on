@@ -28,15 +28,10 @@ function ProfileLink({ onNavigate }) {
   )
 }
 
-function PrimaryNav({ collapsed = false, onExpandSidebar, onNavigate }) {
+function PrimaryNav({ collapsed = false, onNavigate }) {
   const [projectsOpen, setProjectsOpen] = useState(false)
 
   function toggleProjects() {
-    if (collapsed) {
-      onExpandSidebar?.()
-      setProjectsOpen(true)
-      return
-    }
     setProjectsOpen((open) => !open)
   }
 
@@ -46,11 +41,17 @@ function PrimaryNav({ collapsed = false, onExpandSidebar, onNavigate }) {
       <div className="nav-list">
         <DashboardLink onNavigate={onNavigate} />
         <div className="nav-projects">
-          <button type="button" className={`nav-link nav-projects-toggle ${projectsOpen ? 'active' : ''}`} onClick={toggleProjects} aria-expanded={projectsOpen} title="Projects">
-            <FolderKanban size={18} aria-hidden="true" />
-            <span>Projects</span>
-            {!collapsed && (projectsOpen ? <ChevronUp size={16} className="nav-projects-chevron" aria-hidden="true" /> : <ChevronDown size={16} className="nav-projects-chevron" aria-hidden="true" />)}
-          </button>
+          <div className="nav-projects-row">
+            <NavLink to="/projects" onClick={onNavigate} className={({ isActive }) => `nav-link nav-projects-link ${isActive ? 'active' : ''}`} title="Projects">
+              <FolderKanban size={18} aria-hidden="true" />
+              <span>Projects</span>
+            </NavLink>
+            {!collapsed && (
+              <button type="button" className="nav-projects-chevron-btn" onClick={toggleProjects} aria-expanded={projectsOpen} aria-label={projectsOpen ? 'Collapse project list' : 'Expand project list'}>
+                {projectsOpen ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}
+              </button>
+            )}
+          </div>
           {!collapsed && projectsOpen && (
             <div className="nav-projects-list">
               {projects.map((item) => (
@@ -85,7 +86,7 @@ export default function AppShell() {
             {collapsed ? <ChevronsRight size={16} aria-hidden="true" /> : <ChevronsLeft size={16} aria-hidden="true" />}
           </button>
         </div>
-        <PrimaryNav collapsed={collapsed} onExpandSidebar={() => setCollapsed(false)} />
+        <PrimaryNav collapsed={collapsed} />
         <div className="side-nav-footer">
           <ProfileLink />
         </div>
