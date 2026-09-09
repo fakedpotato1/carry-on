@@ -1,3 +1,5 @@
+export const currentUser = { name: 'Ethan', role: 'Student' }
+
 export const team = [
   { id: 1, name: 'Aisha Rahman', initials: 'AR', role: 'Team lead', workload: 72, confirmed: true },
   { id: 2, name: 'Ben Lim', initials: 'BL', role: 'Research', workload: 48, confirmed: true },
@@ -7,13 +9,21 @@ export const team = [
 
 export const project = {
   id: 'urban-heat', title: 'Urban Heat & Student Wellbeing', module: 'ENV2104 · Research Methods', type: 'Report',
-  deadline: '18 Sep 2026, 11:59 PM', daysLeft: 12, progress: 68,
+  deadline: '18 Sep 2026, 11:59 PM', daysLeft: 12, progress: 68, atRisk: false,
   document: 'Urban Heat Group Report — Working Draft', repository: 'loadshift-team/urban-heat-analysis',
 }
 
 export const projects = [
   project,
-  { id: 'campus-mobility', title: 'Campus Mobility API', module: 'SWE2202 · Software Studio', type: 'Coding', deadline: '28 Sep 2026, 11:59 PM', progress: 34, daysLeft: 21 },
+  { id: 'campus-mobility', title: 'Campus Mobility API', module: 'SWE2202 · Software Studio', type: 'Coding', deadline: '28 Sep 2026, 11:59 PM', progress: 34, daysLeft: 21, atRisk: true },
+]
+
+export const dashboardOverview = { totalProjectSlots: 5, dueThisWeek: 1 }
+
+export const upcoming = [
+  { date: '2 Oct 2026', title: 'Literature Review Draft', projectId: 'urban-heat' },
+  { date: '12 Oct 2026', title: 'API Testing & Debugging', projectId: 'campus-mobility' },
+  { date: '20 Oct 2026', title: 'Final Report Submission', projectId: 'urban-heat' },
 ]
 
 export const briefText = `Prepare a 3,500-word evidence-based report examining how urban heat affects university student wellbeing. Compare two campus zones, analyse primary temperature data, and propose three practical interventions. Include an executive summary, methodology, findings, discussion, recommendations, and Harvard-style references.`
