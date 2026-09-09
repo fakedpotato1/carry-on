@@ -22,8 +22,26 @@
 .step-indicator-row {
   display: flex;
   width: 100%;
-  align-items: center;
+  align-items: flex-start;
   padding: 2rem;
+}
+.step-indicator-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.step-indicator-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #7a877f;
+  text-align: center;
+  white-space: nowrap;
+  transition: color 250ms ease, font-weight 250ms ease;
+}
+.step-indicator-label.active {
+  color: #1c3324;
+  font-weight: 700;
 }
 .step-content-default {
   position: relative;
@@ -124,6 +142,7 @@
   position: relative;
   margin-left: 0.5rem;
   margin-right: 0.5rem;
+  margin-top: 15px;
   height: 0.125rem;
   flex: 1;
   overflow: hidden;

@@ -20,6 +20,9 @@ export default function Stepper({
   forwardIcon: ForwardIcon,
   disableStepIndicators = false,
   renderStepIndicator,
+  // Customization: optional label shown under each step indicator (e.g.
+  // ["Your name", "Username & password", "Create project"]).
+  stepLabels = [],
   // Customization: gate forward progress until the current step is valid.
   // Returns true (default) to allow advancing, or false to block Next/Complete.
   validateStep = () => true,
@@ -66,28 +69,35 @@ export default function Stepper({
           {stepsArray.map((_, index) => {
             const stepNumber = index + 1;
             const isNotLastStep = index < totalSteps - 1;
+            const label = stepLabels[index];
+            const status = currentStep === stepNumber ? 'active' : currentStep < stepNumber ? 'inactive' : 'complete';
             return (
               <React.Fragment key={stepNumber}>
-                {renderStepIndicator ? (
-                  renderStepIndicator({
-                    step: stepNumber,
-                    currentStep,
-                    onStepClick: clicked => {
-                      setDirection(clicked > currentStep ? 1 : -1);
-                      updateStep(clicked);
-                    }
-                  })
-                ) : (
-                  <StepIndicator
-                    step={stepNumber}
-                    disableStepIndicators={disableStepIndicators}
-                    currentStep={currentStep}
-                    onClickStep={clicked => {
-                      setDirection(clicked > currentStep ? 1 : -1);
-                      updateStep(clicked);
-                    }}
-                  />
-                )}
+                <div className="step-indicator-col">
+                  {renderStepIndicator ? (
+                    renderStepIndicator({
+                      step: stepNumber,
+                      currentStep,
+                      onStepClick: clicked => {
+                        setDirection(clicked > currentStep ? 1 : -1);
+                        updateStep(clicked);
+                      }
+                    })
+                  ) : (
+                    <StepIndicator
+                      step={stepNumber}
+                      disableStepIndicators={disableStepIndicators}
+                      currentStep={currentStep}
+                      onClickStep={clicked => {
+                        setDirection(clicked > currentStep ? 1 : -1);
+                        updateStep(clicked);
+                      }}
+                    />
+                  )}
+                  {label && (
+                    <span className={`step-indicator-label ${status === 'active' ? 'active' : ''}`}>{label}</span>
+                  )}
+                </div>
                 {isNotLastStep && <StepConnector isComplete={currentStep > stepNumber} />}
               </React.Fragment>
             );

@@ -134,6 +134,7 @@ export default function SignUp() {
           backIcon={ArrowLeft}
           forwardIcon={ArrowRight}
           disableStepIndicators
+          stepLabels={['Your name', 'Username & password', 'Create project']}
           validateStep={validateStep}
           stepCircleContainerClassName="signup-step-card"
         >
