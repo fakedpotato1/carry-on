@@ -33,22 +33,15 @@ export default function Landing() {
       <div className="landing-content">
         <header className="landing-nav">
           <Link to="/" className="landing-brand">
-            <span className="landing-brand-mark"><Waves size={19} aria-hidden="true" /></span>
+            <span className="landing-brand-mark"><Waves size={26} aria-hidden="true" /></span>
             <span className="landing-brand-name">Load Shift</span>
           </Link>
-          <nav className="landing-nav-links" aria-label="Site">
-            <a href="#features">Features</a>
-            <a href="#about">About</a>
-          </nav>
+          
           <div className="landing-nav-actions">
             <Link to="/dashboard" className="landing-btn landing-btn-ghost">Log In</Link>
             <Link to="/dashboard" className="landing-btn landing-btn-solid">Sign Up</Link>
           </div>
         </header>
-
-        <span className="landing-sidenote" aria-hidden="true">
-          <span>A</span><span>CALMER</span><span>WAY</span><span>TO</span><span>COLLABORATE</span>
-        </span>
 
         <main className="landing-hero">
           <span className="landing-badge"><span className="landing-badge-new">NEW</span>Smarter tools for student teams</span>
@@ -60,7 +53,6 @@ export default function Landing() {
               <path d="M12 15 L18 5" stroke="#f4e2a1" strokeWidth="2.4" strokeLinecap="round" />
               <path d="M18 19 L25 13" stroke="#f4e2a1" strokeWidth="2.4" strokeLinecap="round" />
             </svg>
-            <br />
             more progress
           </h1>
 
