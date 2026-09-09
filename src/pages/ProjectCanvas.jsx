@@ -17,8 +17,9 @@ import Modal from '../components/Modal'
 import StatusPill from '../components/StatusPill'
 import TaskNode from '../components/TaskNode'
 import TaskPanel from '../components/TaskPanel'
-import { currentUser, initialTasks, project, projects, taskDependencies, team } from '../data/mockData'
+import { currentUser, initialTasks, project, taskDependencies, team } from '../data/mockData'
 import { resolveCover, setStoredCover } from '../lib/covers'
+import { getAllProjects } from '../lib/projectsStore'
 
 const nodeTypes = { task: TaskNode }
 const ownerColumns = team.map((member) => member.name)
@@ -79,7 +80,7 @@ const makeEdges = (nodes, mode) => taskDependencies.map(([source, target], index
 export default function ProjectCanvas() {
   const { id = project.id } = useParams()
   const location = useLocation()
-  const currentProject = useMemo(() => projects.find((item) => item.id === id) || project, [id])
+  const currentProject = useMemo(() => getAllProjects().find((item) => item.id === id) || project, [id])
 
   const [mode, setMode] = useState(location.state?.mode === 'draft' ? 'draft' : 'active')
   const firstNodes = useMemo(() => makeNodes(location.state?.mode === 'draft' ? 'draft' : 'active'), [])

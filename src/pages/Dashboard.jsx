@@ -6,8 +6,9 @@ import Button from '../components/Button'
 import Card from '../components/Card'
 import PageHeader from '../components/PageHeader'
 import ProgressBar from '../components/ProgressBar'
-import { currentUser, dashboardOverview, projects, team, upcoming } from '../data/mockData'
+import { currentUser, dashboardOverview, team, upcoming } from '../data/mockData'
 import { resolveCover, setStoredCover } from '../lib/covers'
+import { getAllProjects } from '../lib/projectsStore'
 
 const VISIBLE_MEMBERS = 4
 
@@ -21,6 +22,7 @@ function buildGreeting() {
 }
 
 export default function Dashboard() {
+  const projects = getAllProjects()
   const [covers, setCovers] = useState(() =>
     Object.fromEntries(projects.map((item) => [item.id, resolveCover(item)]).filter(([, url]) => url))
   )

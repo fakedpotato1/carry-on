@@ -5,8 +5,9 @@ import Avatar from '../components/Avatar'
 import Button from '../components/Button'
 import Card from '../components/Card'
 import PageHeader from '../components/PageHeader'
-import { projects, team } from '../data/mockData'
+import { team } from '../data/mockData'
 import { resolveCover, setStoredCover } from '../lib/covers'
+import { getAllProjects } from '../lib/projectsStore'
 
 const FILTERS = [
   { key: 'all', label: 'All Projects', icon: LayoutGrid, match: () => true },
@@ -92,6 +93,7 @@ function ProjectCard({ item, cover, onCoverChange }) {
 }
 
 export default function Projects() {
+  const projects = getAllProjects()
   const [covers, setCovers] = useState(() =>
     Object.fromEntries(projects.map((item) => [item.id, resolveCover(item)]).filter(([, url]) => url))
   )
