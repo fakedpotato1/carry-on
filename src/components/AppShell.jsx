@@ -1,7 +1,8 @@
 import { CalendarDays, ChevronDown, ChevronRight, ChevronsLeft, ChevronsRight, ChevronUp, FolderKanban, LayoutDashboard, Menu, Plus, Waves, X } from 'lucide-react'
 import { useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
-import { currentUser, projects } from '../data/mockData'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { currentUser } from '../data/mockData'
+import { getAllProjects } from '../lib/projectsStore'
 import Avatar from './Avatar'
 
 function initialsOf(name) {
@@ -30,6 +31,10 @@ function ProfileLink({ onNavigate }) {
 
 function PrimaryNav({ collapsed = false, onNavigate }) {
   const [projectsOpen, setProjectsOpen] = useState(false)
+  // Re-read on every navigation so a project created via "New Project" shows up
+  // here immediately (the sidebar itself never unmounts between routes).
+  const location = useLocation()
+  const projects = getAllProjects()
 
   function toggleProjects() {
     setProjectsOpen((open) => !open)
