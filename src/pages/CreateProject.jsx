@@ -1,0 +1,54 @@
+import { useEffect, useState } from 'react'
+import { Check, Code2, FileText, Github, Link2, Plus, Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import Button from '../components/Button'
+import Card from '../components/Card'
+import PageHeader from '../components/PageHeader'
+import { briefText } from '../data/mockData'
+
+export default function CreateProject() {
+  const navigate = useNavigate()
+  const [type, setType] = useState('Report')
+  const [members, setMembers] = useState(['Aisha Rahman', 'Ben Lim', 'Clara Wong', 'Daniel Tan'])
+  const [newMember, setNewMember] = useState('')
+  const [connected, setConnected] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [step, setStep] = useState(0)
+
+  useEffect(() => {
+    if (!loading) return undefined
+    const steps = [setTimeout(() => setStep(1), 650), setTimeout(() => setStep(2), 1350), setTimeout(() => navigate('/project/urban-heat/canvas', { state: { mode: 'draft' } }), 2200)]
+    return () => steps.forEach(clearTimeout)
+  }, [loading, navigate])
+
+  const addMember = () => {
+    if (!newMember.trim()) return
+    setMembers((current) => [...current, newMember.trim()])
+    setNewMember('')
+  }
+
+  if (loading) return <div className="page"><div className="page-narrow"><Card className="loading-panel" aria-live="polite"><div><div className="spinner" aria-hidden="true" /><h1 className="page-title" style={{ marginTop: 22 }}>Analyzing requirements</h1><p className="page-description">LoadShift is preparing an editable draft. Nothing becomes active without team confirmation.</p><div className="loading-steps">{['Reading the brief and rubric', 'Mapping outcomes and dependencies', 'Balancing suggested responsibilities'].map((label, index) => <div key={label} className={`loading-step ${step >= index ? 'done' : ''}`}>{step >= index ? <Check size={18} /> : <span className="loading-dot" />}{label}</div>)}</div></div></Card></div></div>
+
+  return (
+    <div className="page"><div className="page-narrow">
+      <PageHeader eyebrow="New project" title="Create a group project" description="Add the assignment, team, and workspace in one place. The next screen is an editable AI-suggested canvas." />
+      <Card>
+        <form className="form-grid" onSubmit={(event) => { event.preventDefault(); setLoading(true) }}>
+          <div className="form-full"><label className="label" htmlFor="project-name">Project title</label><input className="field" id="project-name" defaultValue="Urban Heat & Student Wellbeing" required /></div>
+          <div className="form-full"><label className="label" htmlFor="assignment-content">Assignment brief and rubric</label><textarea className="field" id="assignment-content" rows="8" defaultValue={`${briefText}\n\nRubric: Evidence 25% · Methodology 20% · Analysis 25% · Discussion 20% · Structure 10%`} required /></div>
+          <div><label className="label" htmlFor="deadline">Final deadline</label><input className="field" id="deadline" type="datetime-local" defaultValue="2026-09-18T23:59" required /></div>
+          <fieldset style={{ border: 0, padding: 0, margin: 0 }}><legend className="label">Assignment type</legend><div className="choice-grid compact-choices"><button type="button" className={`choice-card ${type === 'Report' ? 'selected' : ''}`} aria-pressed={type === 'Report'} onClick={() => { setType('Report'); setConnected(false) }}><FileText size={21} aria-hidden="true" /><strong>Report</strong></button><button type="button" className={`choice-card ${type === 'Coding' ? 'selected' : ''}`} aria-pressed={type === 'Coding'} onClick={() => { setType('Coding'); setConnected(false) }}><Code2 size={21} aria-hidden="true" /><strong>Coding</strong></button></div></fieldset>
+
+          <div className="form-full"><label className="label" htmlFor="member">Teammates</label><div className="button-row member-entry"><input className="field" id="member" value={newMember} onChange={(event) => setNewMember(event.target.value)} placeholder="Enter a teammate’s name" /><Button variant="secondary" type="button" icon={Plus} onClick={addMember}>Add</Button></div><div className="member-chips">{members.map((member) => <span key={member}>{member}<button type="button" aria-label={`Remove ${member}`} onClick={() => setMembers((current) => current.filter((name) => name !== member))}><Trash2 size={14} /></button></span>)}</div></div>
+
+          <div className="form-full integration-card">
+            <div className="integration-icon">{type === 'Coding' ? <Github size={22} aria-hidden="true" /> : <FileText size={22} aria-hidden="true" />}</div>
+            <div><strong>Connect {type === 'Coding' ? 'GitHub' : 'Google Docs'}</strong><p>{type === 'Coding' ? 'Use mocked commits and pull requests as task evidence.' : 'Use mocked document edits and comments as task evidence.'} Activity remains a signal, not proof of effort or quality.</p></div>
+            <Button type="button" variant={connected ? 'secondary' : 'primary'} icon={connected ? Check : Link2} onClick={() => setConnected(!connected)}>{connected ? 'Connected' : `Connect ${type === 'Coding' ? 'repository' : 'document'}`}</Button>
+          </div>
+          <div className="form-full button-row" style={{ justifyContent: 'space-between', marginTop: 4 }}><Button variant="secondary" to="/">Cancel</Button><Button type="submit" aria-busy={loading}>Analyze and create draft</Button></div>
+        </form>
+      </Card>
+    </div></div>
+  )
+}
