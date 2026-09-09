@@ -15,6 +15,9 @@ export default function Stepper({
   nextButtonProps = {},
   backButtonText = 'Back',
   nextButtonText = 'Continue',
+  completeButtonText = 'Complete',
+  backIcon: BackIcon,
+  forwardIcon: ForwardIcon,
   disableStepIndicators = false,
   renderStepIndicator,
   // Customization: gate forward progress until the current step is valid.
@@ -58,10 +61,7 @@ export default function Stepper({
   };
   return (
     <div className="outer-container" {...rest}>
-      <div
-        className={`step-circle-container ${stepCircleContainerClassName}`}
-        style={{ border: '1px solid var(--border-primary, #222)' }}
-      >
+      <div className={`step-circle-container ${stepCircleContainerClassName}`}>
         <div className={`step-indicator-row ${stepContainerClassName}`}>
           {stepsArray.map((_, index) => {
             const stepNumber = index + 1;
@@ -110,6 +110,7 @@ export default function Stepper({
                   className={`back-button ${currentStep === 1 ? 'inactive' : ''}`}
                   {...backButtonProps}
                 >
+                  {BackIcon && <BackIcon size={16} className="back-button-icon" aria-hidden="true" />}
                   {backButtonText}
                 </button>
               )}
@@ -119,7 +120,8 @@ export default function Stepper({
                 disabled={!canAdvance}
                 {...nextButtonProps}
               >
-                {isLastStep ? 'Complete' : nextButtonText}
+                {isLastStep ? completeButtonText : nextButtonText}
+                {ForwardIcon && <ForwardIcon size={16} className="next-button-icon" aria-hidden="true" />}
               </button>
             </div>
           </div>
@@ -198,9 +200,9 @@ function StepIndicator({ step, currentStep, onClickStep, disableStepIndicators }
     <motion.div onClick={handleClick} className="step-indicator" style={disableStepIndicators ? { pointerEvents: 'none', opacity: 0.5 } : {}} animate={status} initial={false}>
       <motion.div
         variants={{
-          inactive: { scale: 1, backgroundColor: '#222', color: '#a3a3a3' },
-          active: { scale: 1, backgroundColor: '#5227FF', color: '#5227FF' },
-          complete: { scale: 1, backgroundColor: '#5227FF', color: '#3b82f6' }
+          inactive: { scale: 1, backgroundColor: '#e6eee8', color: '#5b6a62' },
+          active: { scale: 1, backgroundColor: '#6f5fd8', color: '#fff' },
+          complete: { scale: 1, backgroundColor: '#345b49', color: '#fff' }
         }}
         transition={{ duration: 0.3 }}
         className="step-indicator-inner"
@@ -220,7 +222,7 @@ function StepIndicator({ step, currentStep, onClickStep, disableStepIndicators }
 function StepConnector({ isComplete }) {
   const lineVariants = {
     incomplete: { width: 0, backgroundColor: 'transparent' },
-    complete: { width: '100%', backgroundColor: '#5227FF' }
+    complete: { width: '100%', backgroundColor: '#345b49' }
   };
   return (
     <div className="step-connector">
