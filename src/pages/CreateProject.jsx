@@ -102,7 +102,7 @@ export default function CreateProject() {
             <div><strong>Connect {type === 'Coding' ? 'GitHub' : 'Google Docs'}</strong><p>{type === 'Coding' ? 'Use mocked commits and pull requests as task evidence.' : 'Use mocked document edits and comments as task evidence.'} Activity remains a signal, not proof of effort or quality.</p></div>
             <Button type="button" variant={connected ? 'secondary' : 'primary'} icon={connected ? Check : Link2} onClick={() => setConnected(!connected)}>{connected ? 'Connected' : `Connect ${type === 'Coding' ? 'repository' : 'document'}`}</Button>
           </div>
-          <div className="form-full button-row" style={{ justifyContent: 'space-between', marginTop: 4 }}><Button variant="secondary" to="/">Cancel</Button><Button type="submit" aria-busy={loading}>Analyze and create draft</Button></div>
+          <div className="form-full button-row" style={{ justifyContent: 'space-between', marginTop: 4 }}><Button variant="secondary" to="/dashboard">Cancel</Button><Button type="submit" aria-busy={loading}>Analyze and create draft</Button></div>
         </form>
       </Card>
     </div></div>

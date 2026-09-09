@@ -12,7 +12,7 @@ function initialsOf(name) {
 }
 
 function DashboardLink({ onNavigate }) {
-  return <NavLink to="/" end onClick={onNavigate} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}><LayoutDashboard size={18} aria-hidden="true" /><span>Dashboard</span></NavLink>
+  return <NavLink to="/dashboard" end onClick={onNavigate} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}><LayoutDashboard size={18} aria-hidden="true" /><span>Dashboard</span></NavLink>
 }
 
 function CalendarLink({ onNavigate }) {
@@ -83,7 +83,7 @@ export default function AppShell() {
     <div className={`app-shell ${collapsed ? 'is-collapsed' : ''}`}>
       <aside className="side-nav">
         <div className="brand-row">
-          <NavLink to="/" className="brand">
+          <NavLink to="/dashboard" className="brand">
             <span className="brand-mark"><Waves size={22} aria-hidden="true" /></span>
             <span className="brand-text"><span className="brand-name">LoadShift</span><span className="brand-subtitle">Group work, made lighter</span></span>
           </NavLink>
@@ -98,7 +98,7 @@ export default function AppShell() {
       </aside>
       <div className="main-area">
         <header className="mobile-bar">
-          <NavLink to="/" className="brand" style={{ padding: 0 }}><span className="brand-mark"><Waves size={20} aria-hidden="true" /></span><span className="brand-name">LoadShift</span></NavLink>
+          <NavLink to="/dashboard" className="brand" style={{ padding: 0 }}><span className="brand-mark"><Waves size={20} aria-hidden="true" /></span><span className="brand-name">LoadShift</span></NavLink>
           <button className="icon-button" aria-expanded={menuOpen} aria-controls="mobile-primary-menu" aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={21} aria-hidden="true" /> : <Menu size={21} aria-hidden="true" />}</button>
         </header>
         {menuOpen && (
