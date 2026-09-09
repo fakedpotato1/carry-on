@@ -14,6 +14,7 @@ import {
   X,
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
+import GradientWaves from '../components/GradientWaves'
 import Stepper, { Step } from '../components/Stepper'
 import { setStoredUser } from '../lib/authStore'
 import { computeDaysLeft, formatDeadline, formatToday } from '../lib/projectFormat'
@@ -84,13 +85,29 @@ export default function SignUp() {
 
   return (
     <div className="signup-shell">
-      <div className="signup-decor" aria-hidden="true">
-        <div className="signup-photo">
-          <div className="signup-photo-frame" />
-          <span className="signup-photo-caption">Smaller steps,<br />brighter tomorrows ♡</span>
-        </div>
-        <span className="signup-sticky signup-sticky-1">Good<br />projects<br />brighter<br />people ♡</span>
-        <span className="signup-sticky signup-sticky-2">Plan<br />Collaborate<br />Create<br />Grow</span>
+      <div className="signup-bg" aria-hidden="true">
+        <GradientWaves
+          horizonColor="#33b260"
+          waveColor="#c7dcbf"
+          crestColor="#f1f3ec"
+          speed={0.6}
+          amplitude={2.6}
+          waveScale={0.6}
+          waveRatio={0.9}
+          swell={26.5}
+          turbulence={6.5}
+          tilt={0.2}
+          zoom={0.9}
+          height={5.5}
+          fogDepth={15}
+          detail="medium"
+          brightness={1.0}
+          opacity={1.0}
+          mouseInteraction={false}
+          parallaxStrength={0.5}
+          grain
+          grainIntensity={0.05}
+        />
       </div>
 
       <header className="signup-topnav">
