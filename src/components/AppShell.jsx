@@ -2,6 +2,7 @@ import { CalendarDays, ChevronDown, ChevronRight, ChevronsLeft, ChevronsRight, C
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { currentUser } from '../data/mockData'
+import { resolveCurrentUser } from '../lib/authStore'
 import { getAllProjects } from '../lib/projectsStore'
 import Avatar from './Avatar'
 
@@ -20,10 +21,11 @@ function CalendarLink({ onNavigate }) {
 }
 
 function ProfileLink({ onNavigate }) {
+  const user = resolveCurrentUser(currentUser)
   return (
     <NavLink to="/profile" onClick={onNavigate} className={({ isActive }) => `profile-link ${isActive ? 'active' : ''}`}>
-      <Avatar initials={initialsOf(currentUser.name)} />
-      <span className="profile-link-text"><strong>{currentUser.name}</strong><span>{currentUser.role}</span></span>
+      <Avatar initials={initialsOf(user.name)} />
+      <span className="profile-link-text"><strong>{user.name}</strong><span>{user.role}</span></span>
       <ChevronRight size={16} className="profile-link-chevron" aria-hidden="true" />
     </NavLink>
   )

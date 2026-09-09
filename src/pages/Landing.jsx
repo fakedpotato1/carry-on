@@ -15,7 +15,7 @@ export default function Landing() {
           waveScale={0.6}
           waveRatio={0.9}
           swell={26.5}
-          turbulence={6.5}
+          turbulence={6}
           tilt={0.2}
           zoom={1.0}
           height={5.5}
@@ -36,10 +36,10 @@ export default function Landing() {
             <span className="landing-brand-mark"><Waves size={26} aria-hidden="true" /></span>
             <span className="landing-brand-name">Load Shift</span>
           </Link>
-          
+
           <div className="landing-nav-actions">
             <Link to="/dashboard" className="landing-btn landing-btn-ghost">Log In</Link>
-            <Link to="/dashboard" className="landing-btn landing-btn-solid">Sign Up</Link>
+            <Link to="/signup" className="landing-btn landing-btn-solid">Sign Up</Link>
           </div>
         </header>
 
@@ -59,7 +59,7 @@ export default function Landing() {
           <p className="landing-subtext">Plan, track, and manage your group projects in one place so you can focus on what really matters.</p>
 
           <div className="landing-cta-row">
-            <Link to="/dashboard" className="landing-cta-primary">
+            <Link to="/signup" className="landing-cta-primary">
               Get started
               <span className="landing-cta-arrow"><ArrowRight size={17} aria-hidden="true" /></span>
             </Link>

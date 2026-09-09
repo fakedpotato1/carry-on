@@ -10,11 +10,13 @@ import ProjectCanvas from './pages/ProjectCanvas'
 import Profile from './pages/Profile'
 import Projects from './pages/Projects'
 import RubricEvaluation from './pages/RubricEvaluation'
+import SignUp from './pages/SignUp'
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/signup" element={<SignUp />} />
       <Route element={<AppShell />}>
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="calendar" element={<Calendar />} />

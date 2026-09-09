@@ -7,6 +7,7 @@ import Card from '../components/Card'
 import PageHeader from '../components/PageHeader'
 import ProgressBar from '../components/ProgressBar'
 import { currentUser, dashboardOverview, team, upcoming } from '../data/mockData'
+import { resolveCurrentUser } from '../lib/authStore'
 import { resolveCover, setStoredCover } from '../lib/covers'
 import { getAllProjects } from '../lib/projectsStore'
 
@@ -22,6 +23,7 @@ function buildGreeting() {
 }
 
 export default function Dashboard() {
+  const user = resolveCurrentUser(currentUser)
   const projects = getAllProjects()
   const [covers, setCovers] = useState(() =>
     Object.fromEntries(projects.map((item) => [item.id, resolveCover(item)]).filter(([, url]) => url))
@@ -59,7 +61,7 @@ export default function Dashboard() {
 
   return (
     <div className="page">
-      <PageHeader eyebrow={dateLabel} title={`Good ${timeOfDay}, ${currentUser.name}`} actions={<Button to="/project/new" icon={Plus}>New Project</Button>} />
+      <PageHeader eyebrow={dateLabel} title={`Good ${timeOfDay}, ${user.name}`} actions={<Button to="/project/new" icon={Plus}>New Project</Button>} />
 
       <div className="stat-grid">
         {stats.map(({ key, label, value, suffix, icon: Icon, tone, chevron }) => (

@@ -4,7 +4,9 @@ import Avatar from '../components/Avatar'
 import Card from '../components/Card'
 import PageHeader from '../components/PageHeader'
 import ProgressBar from '../components/ProgressBar'
-import { currentUser, projects, team } from '../data/mockData'
+import { currentUser, team } from '../data/mockData'
+import { resolveCurrentUser } from '../lib/authStore'
+import { getAllProjects } from '../lib/projectsStore'
 
 function initialsOf(name) {
   const parts = name.trim().split(/\s+/)
@@ -13,6 +15,8 @@ function initialsOf(name) {
 }
 
 export default function Profile() {
+  const user = resolveCurrentUser(currentUser)
+  const projects = getAllProjects()
   const atRiskCount = projects.filter((item) => item.atRisk).length
 
   return (
@@ -21,10 +25,10 @@ export default function Profile() {
 
       <Card className="profile-header-card">
         <div className="profile-header-row">
-          <Avatar initials={initialsOf(currentUser.name)} size="xl" />
+          <Avatar initials={initialsOf(user.name)} size="xl" />
           <div>
-            <h2>{currentUser.name}</h2>
-            <p className="muted">{currentUser.role}</p>
+            <h2>{user.name}</h2>
+            <p className="muted">{user.role}</p>
           </div>
         </div>
       </Card>
