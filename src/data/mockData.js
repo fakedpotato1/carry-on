@@ -26,6 +26,23 @@ export const upcoming = [
   { date: '20 Oct 2026', title: 'Final Report Submission', projectId: 'urban-heat' },
 ]
 
+export const taskTypes = ['Assignment', 'Meeting', 'Milestone', 'Other']
+
+export const calendarTasks = [
+  { id: 'cal-1', date: '2026-09-08', title: 'Discussion Outline Checkpoint', projectId: 'urban-heat', type: 'Milestone' },
+  { id: 'cal-2', date: '2026-09-11', title: 'Methodology Review', projectId: 'urban-heat', type: 'Meeting' },
+  { id: 'cal-3', date: '2026-09-13', title: 'Wellbeing Survey Summary', projectId: 'urban-heat', type: 'Assignment' },
+  { id: 'cal-4', date: '2026-09-18', title: 'Report Submission', projectId: 'urban-heat', type: 'Assignment' },
+  { id: 'cal-5', date: '2026-09-21', title: 'Sprint Planning', projectId: 'campus-mobility', type: 'Meeting' },
+  { id: 'cal-6', date: '2026-09-25', title: 'API Endpoint Review', projectId: 'campus-mobility', type: 'Milestone' },
+  { id: 'cal-7', date: '2026-09-28', title: 'Campus Mobility Submission', projectId: 'campus-mobility', type: 'Assignment' },
+  { id: 'cal-8', date: '2026-10-02', title: 'Literature Review Draft', projectId: 'urban-heat', type: 'Assignment' },
+  { id: 'cal-9', date: '2026-10-06', title: 'Team Sync', projectId: 'campus-mobility', type: 'Meeting' },
+  { id: 'cal-10', date: '2026-10-08', title: 'API Testing & Debugging', projectId: 'campus-mobility', type: 'Milestone' },
+  { id: 'cal-11', date: '2026-10-12', title: 'Progress Report Submission', projectId: 'urban-heat', type: 'Assignment' },
+  { id: 'cal-12', date: '2026-10-20', title: 'Final Report Submission', projectId: 'urban-heat', type: 'Assignment' },
+]
+
 export const briefText = `Prepare a 3,500-word evidence-based report examining how urban heat affects university student wellbeing. Compare two campus zones, analyse primary temperature data, and propose three practical interventions. Include an executive summary, methodology, findings, discussion, recommendations, and Harvard-style references.`
 
 export const rubric = [

@@ -118,7 +118,7 @@ export default function Dashboard() {
           <Card>
             <div className="upcoming-head">
               <h3 className="upcoming-title">Upcoming</h3>
-              <span className="upcoming-viewall">View all <ArrowRight size={14} aria-hidden="true" /></span>
+              <Link to="/calendar" className="upcoming-viewall">View all <ArrowRight size={14} aria-hidden="true" /></Link>
             </div>
             <div className="upcoming-list">
               {upcoming.map((item) => (
