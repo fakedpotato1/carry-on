@@ -1,10 +1,10 @@
 export const currentUser = { name: 'Ethan', role: 'Student' }
 
 export const team = [
-  { id: 1, name: 'Aisha Rahman', initials: 'AR', role: 'Team lead', workload: 72, confirmed: true },
-  { id: 2, name: 'Ben Lim', initials: 'BL', role: 'Research', workload: 48, confirmed: true },
-  { id: 3, name: 'Clara Wong', initials: 'CW', role: 'Data analysis', workload: 64, confirmed: true },
-  { id: 4, name: 'Daniel Tan', initials: 'DT', role: 'Discussion draft', workload: 26, confirmed: false },
+  { id: 1, name: 'Aisha Rahman', initials: 'AR', role: 'Team lead', workload: 72, confirmed: true, photo: '/img/girl-profile.jpg' },
+  { id: 2, name: 'Ben Lim', initials: 'BL', role: 'Research', workload: 48, confirmed: true, photo: '/img/boy-profile.jpg' },
+  { id: 3, name: 'Clara Wong', initials: 'CW', role: 'Data analysis', workload: 64, confirmed: true, photo: '/img/girl-profile.jpg' },
+  { id: 4, name: 'Daniel Tan', initials: 'DT', role: 'Discussion draft', workload: 26, confirmed: false, photo: '/img/boy-profile.jpg' },
 ]
 
 export const project = {
@@ -12,13 +12,14 @@ export const project = {
   deadline: '18 Sep 2026, 11:59 PM', daysLeft: 12, progress: 68, atRisk: false,
   document: 'Urban Heat Group Report — Working Draft', repository: 'loadshift-team/urban-heat-analysis',
   description: 'Investigating the impact of urban heat on student wellbeing and proposing data-driven solutions for a healthier campus environment.',
-  tagline: 'Healthier students, greener tomorrows.',
+  coverImage: '/covers/urban-heat.jpg',
+  startDate: '1 Sep 2026',
+  tags: ['Urban heat', 'Student wellbeing', 'Data analysis', 'Campus environment'],
   documents: [
-    { type: 'pdf', name: 'Literature Review.pdf' },
-    { type: 'doc', name: 'Working Draft.docx' },
-    { type: 'sheet', name: 'Temperature Data.xlsx' },
-    { type: 'drive', name: 'Shared Drive' },
-    { type: 'doc', name: 'Survey Notes.docx' },
+    { type: 'pdf', name: 'Literature Review Draft.pdf', author: 'Aisha Rahman', date: '2 Oct 2026'},
+    { type: 'sheet', name: 'Dataset_Collection.xlsx', author: 'Ben Lim', date: '1 Oct 2026' },
+    { type: 'doc', name: 'Survey_Questions.docx', author: 'Clara Wong', date: '28 Sep 2026' },
+    { type: 'pdf', name: 'Project_Proposal.pdf', author: 'Ethan Tan', date: '25 Sep 2026' },
   ],
 }
 
@@ -27,11 +28,13 @@ export const projects = [
   {
     id: 'campus-mobility', title: 'Campus Mobility API', module: 'SWE2202 · Software Studio', type: 'Coding', deadline: '28 Sep 2026, 11:59 PM', progress: 34, daysLeft: 21, atRisk: true,
     description: 'Developing an API prototype to improve campus mobility through real-time data and route optimization.',
-    tagline: 'Smarter mobility, brighter campus.',
+    coverImage: '/covers/campus-mobility.jpg',
+    startDate: '3 Sep 2026',
+    tags: ['Campus mobility', 'API design', 'Real-time data', 'Route optimization'],
     documents: [
-      { type: 'pdf', name: 'API Spec.pdf' },
-      { type: 'doc', name: 'Design Notes.docx' },
-      { type: 'code', name: 'GitHub Repo' },
+      { type: 'pdf', name: 'API_Spec.pdf', author: 'Ben Lim', date: '4 Sep 2026' },
+      { type: 'doc', name: 'Design_Notes.docx', author: 'Aisha Rahman', date: '8 Sep 2026' },
+      { type: 'code', name: 'GitHub Repo', author: 'Clara Wong', date: '9 Sep 2026' },
     ],
   },
 ]

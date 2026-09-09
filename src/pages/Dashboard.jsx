@@ -7,6 +7,7 @@ import Card from '../components/Card'
 import PageHeader from '../components/PageHeader'
 import ProgressBar from '../components/ProgressBar'
 import { currentUser, dashboardOverview, projects, team, upcoming } from '../data/mockData'
+import { resolveCover, setStoredCover } from '../lib/covers'
 
 const VISIBLE_MEMBERS = 4
 
@@ -20,7 +21,9 @@ function buildGreeting() {
 }
 
 export default function Dashboard() {
-  const [covers, setCovers] = useState({})
+  const [covers, setCovers] = useState(() =>
+    Object.fromEntries(projects.map((item) => [item.id, resolveCover(item)]).filter(([, url]) => url))
+  )
   const [copiedId, setCopiedId] = useState(null)
   const { timeOfDay, dateLabel } = buildGreeting()
 
@@ -36,8 +39,13 @@ export default function Dashboard() {
   function handleCoverChange(id, event) {
     const file = event.target.files?.[0]
     if (!file) return
-    const url = URL.createObjectURL(file)
-    setCovers((prev) => ({ ...prev, [id]: url }))
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = reader.result
+      setCovers((prev) => ({ ...prev, [id]: dataUrl }))
+      setStoredCover(id, dataUrl)
+    }
+    reader.readAsDataURL(file)
   }
 
   function handleCopyLink(id) {
@@ -91,7 +99,7 @@ export default function Dashboard() {
                       <span className="meta-chip meta-chip-members">
                         <Users size={16} aria-hidden="true" />{team.length} members
                         <span className="avatar-stack">
-                          {visibleMembers.map((member) => <Avatar key={member.id} initials={member.initials} size="sm" />)}
+                          {visibleMembers.map((member) => <Avatar key={member.id} initials={member.initials} photo={member.photo} size="sm" />)}
                           {extraMembers > 0 && <span className="avatar avatar-sm avatar-more">+{extraMembers}</span>}
                         </span>
                       </span>

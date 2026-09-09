@@ -6,6 +6,7 @@ import Button from '../components/Button'
 import Card from '../components/Card'
 import PageHeader from '../components/PageHeader'
 import { projects, team } from '../data/mockData'
+import { resolveCover, setStoredCover } from '../lib/covers'
 
 const FILTERS = [
   { key: 'all', label: 'All Projects', icon: LayoutGrid, match: () => true },
@@ -63,7 +64,7 @@ function ProjectCard({ item, cover, onCoverChange }) {
           <div>
             <span className="all-project-subhead">Team ({team.length})</span>
             <div className="avatar-stack">
-              {team.slice(0, 4).map((member) => <Avatar key={member.id} initials={member.initials} size="sm" />)}
+              {team.slice(0, 4).map((member) => <Avatar key={member.id} initials={member.initials} photo={member.photo} size="sm" />)}
               <button type="button" className="avatar avatar-sm avatar-add" aria-label="Add team member"><Plus size={13} aria-hidden="true" /></button>
             </div>
           </div>
@@ -91,14 +92,21 @@ function ProjectCard({ item, cover, onCoverChange }) {
 }
 
 export default function Projects() {
-  const [covers, setCovers] = useState({})
+  const [covers, setCovers] = useState(() =>
+    Object.fromEntries(projects.map((item) => [item.id, resolveCover(item)]).filter(([, url]) => url))
+  )
   const [filter, setFilter] = useState('all')
 
   function handleCoverChange(id, event) {
     const file = event.target.files?.[0]
     if (!file) return
-    const url = URL.createObjectURL(file)
-    setCovers((prev) => ({ ...prev, [id]: url }))
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = reader.result
+      setCovers((prev) => ({ ...prev, [id]: dataUrl }))
+      setStoredCover(id, dataUrl)
+    }
+    reader.readAsDataURL(file)
   }
 
   const activeFilter = FILTERS.find((item) => item.key === filter) ?? FILTERS[0]
