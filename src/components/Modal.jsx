@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 
-export default function Modal({ open, title, children, onClose, actions }) {
+export default function Modal({ open, title, children, onClose, actions, panelClassName = '' }) {
   const panelRef = useRef(null)
   const closeRef = useRef(null)
 
@@ -27,7 +27,7 @@ export default function Modal({ open, title, children, onClose, actions }) {
   if (!open) return null
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <section className="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title" ref={panelRef}>
+      <section className={`modal-panel ${panelClassName}`.trim()} role="dialog" aria-modal="true" aria-labelledby="modal-title" ref={panelRef}>
         <div className="section-head">
           <h2 id="modal-title">{title}</h2>
           <button ref={closeRef} className="icon-button" aria-label="Close dialog" onClick={onClose}><X size={19} aria-hidden="true" /></button>

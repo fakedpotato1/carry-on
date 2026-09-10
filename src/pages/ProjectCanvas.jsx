@@ -13,6 +13,7 @@ import AIAdvisory from '../components/AIAdvisory'
 import Avatar from '../components/Avatar'
 import Button from '../components/Button'
 import Card from '../components/Card'
+import CompileReportModal from '../components/CompileReportModal'
 import Modal from '../components/Modal'
 import StatusPill from '../components/StatusPill'
 import TaskNode from '../components/TaskNode'
@@ -89,6 +90,7 @@ export default function ProjectCanvas() {
   const [selectedId, setSelectedId] = useState(null)
   const [legendOpen, setLegendOpen] = useState(true)
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const [compileOpen, setCompileOpen] = useState(false)
   const [toast, setToast] = useState('')
 
   const [cover, setCover] = useState(() => resolveCover(currentProject))
@@ -328,7 +330,7 @@ export default function ProjectCanvas() {
               <Link to={`/project/${id}/lecturer-email`} className="canvas-quick-action"><Mail size={20} aria-hidden="true" />Draft Lecturer Email</Link>
               <Link to={`/project/${id}/evidence`} className="canvas-quick-action"><FileText size={20} aria-hidden="true" />Evidence Pack</Link>
               <Link to={`/project/${id}/rubric-evaluation`} className="canvas-quick-action"><FileCheck2 size={20} aria-hidden="true" />Rubric Evaluation</Link>
-              {currentProject.type === 'Report' && <Link to={`/project/${id}/compile-report`} className="canvas-quick-action"><Layers size={20} aria-hidden="true" />Compile Report</Link>}
+              {currentProject.type === 'Report' && <button type="button" className="canvas-quick-action" onClick={() => setCompileOpen(true)}><Layers size={20} aria-hidden="true" />Compile Report</button>}
               <button type="button" className="canvas-quick-action" onClick={handleExportInfo}><Download size={20} aria-hidden="true" />Export Project Info</button>
             </div>
           </Card>
@@ -387,6 +389,7 @@ export default function ProjectCanvas() {
         <p>This locks task editing and turns the same canvas into the live project view. Current owners, outcomes, dependencies, and node positions will remain visible.</p>
         {unconfirmed > 0 && <div className="notice notice-attention"><div><strong>{unconfirmed} AI suggestion{unconfirmed === 1 ? '' : 's'} will be team-confirmed.</strong><p>Confirm only after the team has reviewed these responsibilities.</p></div></div>}
       </Modal>
+      <CompileReportModal open={compileOpen} onClose={() => setCompileOpen(false)} project={currentProject} tasks={nodes.map((node) => node.data.task)} />
       {toast && <div className="toast" role="status"><Check size={18} aria-hidden="true" />{toast}</div>}
     </div>
   )

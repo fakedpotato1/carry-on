@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AppShell from './components/AppShell'
 import Calendar from './pages/Calendar'
-import CompileReport from './pages/CompileReport'
 import CreateProject from './pages/CreateProject'
 import Dashboard from './pages/Dashboard'
 import EvidencePack from './pages/EvidencePack'
@@ -25,7 +24,6 @@ export default function App() {
         <Route path="projects" element={<Projects />} />
         <Route path="project/new" element={<CreateProject />} />
         <Route path="project/:id/canvas" element={<ProjectCanvas />} />
-        <Route path="project/:id/compile-report" element={<CompileReport />} />
         <Route path="project/:id/evidence" element={<EvidencePack />} />
         <Route path="project/:id/lecturer-email" element={<LecturerEmail />} />
         <Route path="project/:id/rubric-evaluation" element={<RubricEvaluation />} />
