@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { AlertTriangle, ArrowLeftRight, Check, FileText, GitCommit, Info, MessageSquareText, Sparkles, X } from 'lucide-react'
+import { AlertTriangle, ArrowLeftRight, Check, ChevronDown, FileText, GitCommit, Info, MessageSquareText, Sparkles, X } from 'lucide-react'
 import AIAdvisory from './AIAdvisory'
 import Button from './Button'
 import Modal from './Modal'
 import StatusPill from './StatusPill'
 import { team } from '../data/mockData'
+
+const USER_TASK_STATUSES = ['Not Started', 'In Progress', 'Ready for Review']
 
 export default function TaskPanel({ task, mode, dependencies, onClose, onUpdate, onRebalance }) {
   const [review, setReview] = useState('')
@@ -14,6 +16,7 @@ export default function TaskPanel({ task, mode, dependencies, onClose, onUpdate,
   const [newOwner, setNewOwner] = useState('Clara Wong')
   const [confirmShift, setConfirmShift] = useState(false)
   const [acknowledged, setAcknowledged] = useState(false)
+  const [statusMenuOpen, setStatusMenuOpen] = useState(false)
 
   useEffect(() => {
     setReview('')
@@ -21,6 +24,7 @@ export default function TaskPanel({ task, mode, dependencies, onClose, onUpdate,
     setShowShift(false)
     setConfirmShift(false)
     setAcknowledged(false)
+    setStatusMenuOpen(false)
   }, [task.id])
 
   const editable = mode === 'draft'
@@ -33,7 +37,28 @@ export default function TaskPanel({ task, mode, dependencies, onClose, onUpdate,
       <div className="task-panel-header"><div><span className="eyebrow">Task details</span><h2>{task.title}</h2></div><button className="icon-button" aria-label="Close task details" onClick={onClose}><X size={19} aria-hidden="true" /></button></div>
       <div className="task-panel-scroll">
         <section className="panel-section">
-          <div className="section-head"><h3>Details</h3>{mode === 'active' && <StatusPill status={task.status} />}</div>
+          <div className="section-head">
+            <h3>Details</h3>
+            {mode === 'active' && (
+              <div className="task-status-menu">
+                <button type="button" className="task-status-trigger" aria-label={`Change task status. Current status: ${task.status}`} aria-haspopup="menu" aria-expanded={statusMenuOpen} onClick={() => setStatusMenuOpen((open) => !open)}>
+                  <StatusPill status={task.status} />
+                  <ChevronDown size={15} aria-hidden="true" />
+                </button>
+                {statusMenuOpen && (
+                  <div className="task-status-options" role="menu" aria-label="Task status choices">
+                    {!USER_TASK_STATUSES.includes(task.status) && <p className="task-status-menu-note">{task.status} came from a supporting workflow. Choosing below returns the task to an ordinary progress stage.</p>}
+                    {USER_TASK_STATUSES.map((status) => (
+                      <button key={status} type="button" role="menuitemradio" className="task-status-option" aria-checked={task.status === status} onClick={() => { onUpdate('status', status); setStatusMenuOpen(false) }}>
+                        <StatusPill status={status} />
+                        {task.status === status && <Check size={16} aria-label="Selected" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           <div className="panel-form">
             <div><label className="label" htmlFor="panel-owner">Owner</label><select id="panel-owner" className="field" value={task.owner} disabled={!editable} onChange={(event) => onUpdate('owner', event.target.value)}>{team.map((member) => <option key={member.id}>{member.name}</option>)}</select></div>
             {field('Deadline', 'deadline')}

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { AlertTriangle, ArrowRight, CalendarClock, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Flag, Plus } from 'lucide-react'
+import { ArrowRight, CalendarClock, CalendarDays, CheckCircle2, ChevronLeft, ChevronRight, Flag, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Button from '../components/Button'
 import Card from '../components/Card'
@@ -10,6 +10,7 @@ import { calendarTasks, initialTasks, projects, taskTypes } from '../data/mockDa
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const WEEKDAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 const TYPE_COLORS = { Assignment: '#a4513c', Meeting: '#345b49', Milestone: '#c9932f', Other: '#8a9690' }
+const ADDABLE_CALENDAR_TYPES = taskTypes.filter((type) => type !== 'Assignment')
 
 function parseDate(value) {
   const [y, m, d] = value.split('-').map(Number)
@@ -109,7 +110,7 @@ export default function Calendar() {
   const [upcomingRange, setUpcomingRange] = useState(30)
   const [addOpen, setAddOpen] = useState(false)
   const [customTasks, setCustomTasks] = useState([])
-  const [form, setForm] = useState({ title: '', date: dateKey(today), projectId: projects[0]?.id ?? '', type: 'Assignment' })
+  const [form, setForm] = useState({ title: '', date: dateKey(today), projectId: projects[0]?.id ?? '', type: 'Meeting' })
 
   const allTasks = useMemo(() => [...calendarTasks, ...customTasks], [customTasks])
   const projectsById = useMemo(() => Object.fromEntries(projects.map((item) => [item.id, item])), [])
@@ -147,32 +148,6 @@ export default function Calendar() {
     ]
   }, [allTasks, today])
 
-  const focusWeek = useMemo(() => {
-    const weekStart = addDays(today, -today.getDay())
-    const weekEnd = addDays(weekStart, 6)
-    const inWeek = allTasks.filter((task) => { const d = parseDate(task.date); return d >= weekStart && d <= weekEnd })
-    const counts = {}
-    inWeek.forEach((task) => { counts[task.type] = (counts[task.type] || 0) + 1 })
-    const overdueInWeek = inWeek.filter((task) => parseDate(task.date) < today).length
-    return { total: inWeek.length, counts, overdueInWeek }
-  }, [allTasks, today])
-
-  const focusGradient = useMemo(() => {
-    const total = focusWeek.total
-    if (!total) return '#e1e6df'
-    let acc = 0
-    const stops = []
-    taskTypes.forEach((type) => {
-      const count = focusWeek.counts[type]
-      if (!count) return
-      const start = (acc / total) * 360
-      acc += count
-      const end = (acc / total) * 360
-      stops.push(`${TYPE_COLORS[type]} ${start}deg ${end}deg`)
-    })
-    return `conic-gradient(${stops.join(', ')})`
-  }, [focusWeek])
-
   const monthMatrix = useMemo(() => buildMonthMatrix(viewDate), [viewDate])
   const monthWeeks = useMemo(() => chunk(monthMatrix, 7), [monthMatrix])
   const weekRow = useMemo(() => buildWeekRow(selectedDate || today), [selectedDate, today])
@@ -201,7 +176,7 @@ export default function Calendar() {
     event.preventDefault()
     if (!form.title.trim() || !form.date || !form.projectId) return
     setCustomTasks((prev) => [...prev, { id: `custom-${Date.now()}`, title: form.title.trim(), date: form.date, projectId: form.projectId, type: form.type }])
-    setForm({ title: '', date: dateKey(today), projectId: projects[0]?.id ?? '', type: 'Assignment' })
+    setForm({ title: '', date: dateKey(today), projectId: projects[0]?.id ?? '', type: 'Meeting' })
     setAddOpen(false)
   }
 
@@ -354,31 +329,6 @@ export default function Calendar() {
               })}
             </div>
           </Card>
-
-          <Card className="focus-card">
-            <h3 className="upcoming-title">Focus this week</h3>
-            <div className="focus-body">
-              <span className="focus-ring" style={{ background: focusGradient }}>
-                <span className="focus-ring-hole">
-                  <strong>{focusWeek.total}</strong>
-                  <span>Tasks</span>
-                </span>
-              </span>
-              <div className="focus-legend">
-                {taskTypes.filter((type) => focusWeek.counts[type]).map((type) => (
-                  <span key={type} className="focus-legend-item">
-                    <span className="focus-legend-dot" style={{ background: TYPE_COLORS[type] }} aria-hidden="true" />
-                    {focusWeek.counts[type]} {type}{focusWeek.counts[type] > 1 ? 's' : ''}
-                  </span>
-                ))}
-                {focusWeek.total === 0 && <span className="focus-legend-item muted">No tasks scheduled</span>}
-              </div>
-            </div>
-            <p className={`focus-note ${focusWeek.overdueInWeek ? 'is-attention' : ''}`}>
-              {focusWeek.overdueInWeek > 0 ? <AlertTriangle size={16} aria-hidden="true" /> : <CheckCircle2 size={16} aria-hidden="true" />}
-              {focusWeek.overdueInWeek > 0 ? `${focusWeek.overdueInWeek} need${focusWeek.overdueInWeek > 1 ? '' : 's'} attention` : "You're on track!"}
-            </p>
-          </Card>
         </aside>
       </div>
 
@@ -404,7 +354,7 @@ export default function Calendar() {
             <div>
               <label className="label" htmlFor="task-type">Type</label>
               <select id="task-type" className="field" value={form.type} onChange={(event) => setForm((prev) => ({ ...prev, type: event.target.value }))}>
-                {taskTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+                {ADDABLE_CALENDAR_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
               </select>
             </div>
           </div>

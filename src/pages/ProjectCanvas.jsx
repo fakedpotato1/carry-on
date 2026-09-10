@@ -130,6 +130,12 @@ export default function ProjectCanvas() {
     } : node))
   }, [setNodes])
 
+  const updateSelectedTask = useCallback((key, value) => {
+    if (!selectedId) return
+    updateTask(selectedId, key, value)
+    if (key === 'status') setToast(`Task status changed to ${value}.`)
+  }, [selectedId, updateTask])
+
   const addTask = () => {
     const taskId = `task-${Date.now()}`
     setNodes((current) => [...current, {
@@ -385,7 +391,7 @@ export default function ProjectCanvas() {
         </div>
       </section>
 
-      {selectedTask && <TaskPanel task={selectedTask} mode={mode} dependencies={dependencies} onClose={() => setSelectedId(null)} onUpdate={(key, value) => updateTask(selectedId, key, value)} onRebalance={rebalance} />}
+      {selectedTask && <TaskPanel task={selectedTask} mode={mode} dependencies={dependencies} onClose={() => setSelectedId(null)} onUpdate={updateSelectedTask} onRebalance={rebalance} />}
 
       <Modal open={confirmOpen} title="Confirm and activate this plan?" onClose={() => setConfirmOpen(false)} actions={<><Button variant="secondary" onClick={() => setConfirmOpen(false)}>Keep editing</Button><Button icon={Check} onClick={activatePlan}>Confirm and activate</Button></>}>
         <p>This locks task editing and turns the same canvas into the live project view. Current owners, outcomes, dependencies, and node positions will remain visible.</p>

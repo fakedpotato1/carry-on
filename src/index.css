@@ -413,6 +413,15 @@ textarea.field { resize: vertical; line-height: 1.5; }
 .panel-section:last-child { border-bottom: 0; }
 .panel-section .section-head { margin-bottom: 13px; }
 .panel-section h3 { margin: 0; font-size: 18px; }
+.task-status-menu { position: relative; flex: none; }
+.task-status-trigger { min-height: 44px; display: inline-flex; align-items: center; gap: 5px; padding: 5px 7px; color: #5b6a62; border: 1px solid transparent; border-radius: 10px; background: transparent; cursor: pointer; }
+.task-status-trigger:hover, .task-status-trigger[aria-expanded="true"] { border-color: #9eb0a4; background: #f1f3ec; }
+.task-status-trigger:focus-visible, .task-status-option:focus-visible { outline: 3px solid rgba(104,136,118,.32); outline-offset: 2px; }
+.task-status-options { position: absolute; z-index: 3; top: calc(100% + 6px); right: 0; width: 190px; display: grid; gap: 3px; padding: 6px; border: 1px solid #d9e0d7; border-radius: 12px; background: #fffefa; box-shadow: 0 12px 30px rgba(38,53,46,.16); }
+.task-status-menu-note { margin: 3px 5px 6px; color: #5b6a62; font-size: 12px; line-height: 1.4; }
+.task-status-option { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 8px; color: #345b49; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
+.task-status-option:hover, .task-status-option[aria-checked="true"] { background: #e6eee8; }
+.task-status-option .pill { pointer-events: none; }
 .panel-form { display: grid; gap: 13px; margin-bottom: 14px; }
 .panel-form .field[readonly], .panel-form .field:disabled { color: #405149; background: #f1f3ec; opacity: 1; }
 .panel-value { margin: 0; color: #5b6a62; line-height: 1.45; }
@@ -537,18 +546,6 @@ textarea.field { resize: vertical; line-height: 1.5; }
 .upcoming-item-type { margin-top: 6px; }
 .upcoming-item-arrow { margin-left: auto; flex: 0 0 auto; align-self: center; color: #b3bdb5; }
 
-.focus-card { text-align: left; }
-.focus-body { display: flex; align-items: center; gap: 18px; margin-top: 10px; }
-.focus-ring { position: relative; width: 100px; height: 100px; flex: 0 0 auto; border-radius: 999px; }
-.focus-ring-hole { position: absolute; inset: 12px; display: grid; place-items: center; border-radius: 999px; background: #fffefa; text-align: center; }
-.focus-ring-hole strong { display: block; font-family: "Lora", Georgia, serif; font-size: 24px; line-height: 1; }
-.focus-ring-hole span { display: block; margin-top: 2px; color: #7a877f; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-.focus-legend { display: grid; gap: 7px; min-width: 0; }
-.focus-legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #33413a; }
-.focus-legend-dot { width: 9px; height: 9px; flex: 0 0 auto; border-radius: 999px; }
-.focus-note { display: flex; align-items: center; gap: 7px; margin: 16px 0 0; padding-top: 14px; border-top: 1px solid #e2e7e0; color: #345b49; font-size: 13px; font-weight: 700; }
-.focus-note.is-attention { color: #a4453c; }
-
 /* Profile page */
 .avatar-xl { width: 72px; height: 72px; font-size: 22px; border-radius: 22px 17px 22px 15px; }
 .profile-header-row { display: flex; align-items: center; gap: 18px; }
@@ -569,7 +566,6 @@ textarea.field { resize: vertical; line-height: 1.5; }
   .calendar-grid.is-week .calendar-cell { min-height: 150px; }
   .calendar-task-label { display: none; }
   .calendar-task-pill { justify-content: center; padding: 4px; }
-  .focus-body { flex-direction: column; align-items: flex-start; }
 }
 
 /* All Projects page */
