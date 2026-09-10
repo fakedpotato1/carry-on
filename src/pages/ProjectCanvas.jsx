@@ -7,7 +7,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import {
   AlertTriangle, ArrowUpRight, Calendar, CalendarClock, Check, CheckCircle2, ChevronDown, ChevronRight, ChevronUp,
-  Code2, Download, FileCheck2, FileText, FolderOpen, Github, ImagePlus, Layers, Mail, Plus, Sparkles, Table, Trash2, UserPlus, X,
+  Code2, Download, FileCheck2, FileText, FolderOpen, Github, ImagePlus, Layers, Mail, Plus, Sparkles, Trash2, UserPlus, X,
 } from 'lucide-react'
 import AIAdvisory from '../components/AIAdvisory'
 import Avatar from '../components/Avatar'
@@ -28,9 +28,9 @@ const ownerX = Object.fromEntries(ownerColumns.map((owner, index) => [owner, ind
 
 const STATUS_OPTIONS = ['On Track', 'Needs Attention', 'At Risk', 'Completed']
 const DOC_META = {
-  pdf: { icon: FileText, bg: '#fbdcd6', color: '#c94a37' },
-  doc: { icon: FileText, bg: '#dce7fb', color: '#2f5aa8' },
-  sheet: { icon: Table, bg: '#dcf0df', color: '#2f8a4e' },
+  pdf: { image: '/img/pdf.png' },
+  doc: { image: '/img/docx.png' },
+  sheet: { image: '/img/excel.png' },
   drive: { icon: FolderOpen, bg: '#fdecc8', color: '#a4513c' },
   code: { icon: Github, bg: '#e5e5e0', color: '#26352e' },
 }
@@ -315,7 +315,9 @@ export default function ProjectCanvas() {
                 const Icon = meta.icon
                 return (
                   <div key={index} className="canvas-doc-row">
-                    <span className="doc-chip" style={{ background: meta.bg, color: meta.color }}><Icon size={18} aria-hidden="true" /></span>
+                    <span className={`doc-chip ${meta.image ? 'doc-chip-image' : 'doc-chip-fallback'}`} style={meta.image ? undefined : { background: meta.bg, color: meta.color }}>
+                      {meta.image ? <img src={meta.image} alt="" /> : <Icon aria-hidden="true" />}
+                    </span>
                     <span><strong>{doc.name}</strong>{(doc.author || doc.date) && <span>{[doc.author, doc.date].filter(Boolean).join(' · ')}</span>}</span>
                   </div>
                 )

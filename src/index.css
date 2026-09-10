@@ -601,6 +601,10 @@ textarea.field { resize: vertical; line-height: 1.5; }
 .all-project-subhead { display: block; margin-bottom: 8px; color: #5b6a62; font-size: 12px; font-weight: 700; }
 .doc-chip-row { display: flex; align-items: center; gap: 6px; }
 .doc-chip { width: 32px; height: 32px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px;  }
+.canvas-doc-row .doc-chip-image { display: inline-flex; margin-top: 0; overflow: hidden; background: transparent; }
+.doc-chip-image img { display: block; width: 32px; height: 32px; border-radius: 10px; object-fit: cover; }
+.canvas-doc-row .doc-chip-fallback { display: grid; place-items: center; margin-top: 0; overflow: hidden; border: 1px solid currentColor; }
+.doc-chip-fallback svg { display: block; width: 24px; height: 24px; margin: auto; stroke-width: 1.8; }
 .doc-chip-add, .avatar-add { color: #5b6a62; background: #f1f3ec; border: 1px dashed #c5d0c7; cursor: pointer; align-items: center;}
 .avatar-add { width: 27px; height: 27px; margin-left: -8px; border-radius: 10px 8px 10px 7px; display: inline-flex; align-items: center; justify-content: center; }
 .all-project-footer { display: flex; justify-content: flex-end; padding-top: 4px; }
