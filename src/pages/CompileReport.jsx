@@ -53,6 +53,7 @@ export default function CompileReport() {
   const [compiled, setCompiled] = useState(false)
   const [alsoPdf, setAlsoPdf] = useState(true)
   const [toast, setToast] = useState(null)
+  const [showMissingNotice, setShowMissingNotice] = useState(false)
 
   const sectionTasks = initialTasks.filter((task) => task.id !== 'final')
   const completedCount = sectionTasks.filter((task) => task.status === 'Completed').length
@@ -60,6 +61,11 @@ export default function CompileReport() {
 
   const contentReady = contentMode === 'merged' ? !!mergedFile : attachedSections.length > 0
   const canCompile = !!coverFile && !!rubricFile && contentReady
+
+  const missingItems = []
+  if (!coverFile) missingItems.push('a report cover')
+  if (!rubricFile) missingItems.push('a marking rubric')
+  if (!contentReady) missingItems.push(contentMode === 'merged' ? 'the merged document' : 'at least one section')
 
   const formatSummary = formatPreset === 'custom'
     ? `${customFont || 'Custom font'} · ${customSize || '—'}pt · ${customSpacing || '—'} spacing`
@@ -82,6 +88,11 @@ export default function CompileReport() {
   }, [toast])
 
   function startCompile() {
+    if (!canCompile) {
+      setShowMissingNotice(true)
+      return
+    }
+    setShowMissingNotice(false)
     setLoadingStep(0)
     setCompiling(true)
   }
@@ -250,10 +261,16 @@ export default function CompileReport() {
             <div><strong>This is a prototype</strong><p>Compile assembles the outline and applies your chosen formatting rules — it doesn't rewrite anyone's writing.</p></div>
           </div>
 
+          {showMissingNotice && missingItems.length > 0 && (
+            <div className="notice notice-attention" style={{ marginTop: 18 }}>
+              <AlertTriangle size={20} />
+              <div><strong>A few things are still needed</strong><p>Add {missingItems.join(', ')} before compiling.</p></div>
+            </div>
+          )}
+
           <div className="button-row" style={{ justifyContent: 'flex-end', marginTop: 22 }}>
-            <Button icon={Layers} disabled={!canCompile} onClick={startCompile}>Compile Report</Button>
+            <Button icon={Layers} onClick={startCompile}>Compile Report</Button>
           </div>
-          {!canCompile && <p className="small muted" style={{ textAlign: 'right', marginTop: 8 }}>Add a cover, a marking rubric, and at least one section to continue.</p>}
         </>
       )}
 
