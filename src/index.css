@@ -89,7 +89,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .profile-link-chevron { margin-left: auto; flex: 0 0 auto; color: #87938b; }
 .app-shell.is-collapsed .profile-link { justify-content: center; padding-inline: 0; }
 .app-shell.is-collapsed .profile-link-text, .app-shell.is-collapsed .profile-link-chevron { display: none; }
-.main-area { min-width: 0; position: relative; overflow: hidden; }
+.main-area { min-width: 0; position: relative; overflow-x: clip; }
 .main-area::before, .main-area::after { content: ""; position: fixed; z-index: -1; border-radius: 50%; filter: blur(1px); pointer-events: none; }
 .main-area::before { width: 340px; height: 260px; right: -120px; top: -80px; background: rgba(230, 238, 232, .78); transform: rotate(-18deg); border-radius: 58% 42% 62% 38%; }
 .main-area::after { width: 260px; height: 200px; left: 220px; bottom: -120px; background: rgba(238, 226, 211, .45); border-radius: 41% 59% 44% 56%; }
@@ -237,14 +237,17 @@ textarea.field { resize: vertical; line-height: 1.5; }
   .editable-task-grid { grid-template-columns: 1fr 1fr 100px 80px 44px; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 800px) {
   .app-shell { display: block; }
   .side-nav { display: none; }
   .mobile-bar { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 66px; padding: 10px 18px; border-bottom: 1px solid #d9e0d7; background: rgba(255,254,250,.95); backdrop-filter: blur(8px); }
   .mobile-menu { position: fixed; z-index: 40; inset: 66px 0 0; overflow-y: auto; padding: 18px; background: #fffefa; }
+  .mobile-menu .nav-link, .mobile-menu .profile-link { min-height: 48px; }
+  .mobile-menu .nav-projects-chevron-btn { width: 44px; height: 44px; }
   .page { width: calc(100% - 32px); padding: 28px 0 56px; }
   .page-header { display: grid; margin-bottom: 24px; }
   .page-header .button-row { width: 100%; }
+  .page-header .button-row .btn { width: 100%; }
   .grid-2, .grid-3, .form-grid, .choice-grid { grid-template-columns: 1fr; }
   .form-full { grid-column: auto; }
   .card { padding: 20px; }
@@ -261,6 +264,10 @@ textarea.field { resize: vertical; line-height: 1.5; }
   .timeline-copy { grid-column: 2; }
   .timeline-item:not(:last-child)::after { left: 11px; top: 26px; }
   .button-row .btn { flex: 1 1 auto; }
+  .modal-backdrop { place-items: end center; padding: 16px; }
+  .modal-panel { max-height: calc(100dvh - 32px); overflow-y: auto; padding: 22px 18px; border-radius: 18px; }
+  .modal-panel > .button-row .btn { width: 100%; }
+  .toast { left: 16px; right: 16px; bottom: 16px; width: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -450,15 +457,17 @@ textarea.field { resize: vertical; line-height: 1.5; }
   .owner-lanes { right: 60px; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 800px) {
   .stat-grid { grid-template-columns: 1fr; margin: 22px 0 26px; }
   .project-grid { grid-template-columns: 1fr; }
   .project-list { grid-template-columns: 1fr; }
   .project-card { flex-direction: column; }
   .project-card-media { flex-basis: 200px; order: -1; border-left: 0; border-bottom: 1px solid #d9e0d7; }
   .project-card-content .btn { align-self: flex-start; }
+  .project-card-actions { width: 100%; }
+  .project-card-actions .btn { flex: 1 1 auto; }
   .integration-card { grid-template-columns: auto 1fr; }
-  .integration-card .btn { grid-column: 1 / -1; }
+  .integration-card .btn { grid-column: 1 / -1; width: 100%; }
   .canvas-page { min-height: calc(100vh - 66px); padding: 20px 16px 30px; }
   .canvas-toolbar { flex-wrap: nowrap; max-width: calc(100vw - 32px); overflow-x: auto; padding-bottom: 4px; }
   .canvas-toolbar .btn { flex: 0 0 auto; }
@@ -468,8 +477,11 @@ textarea.field { resize: vertical; line-height: 1.5; }
   .owner-lanes { left: 46px; right: 20px; overflow: hidden; }
   .owner-lanes span { padding-inline: 4px; font-size: 10px; white-space: nowrap; }
   .canvas-legend { right: 10px; bottom: 10px; }
+  .canvas-cover-change { opacity: 1; }
   .task-panel { top: 66px; height: calc(100vh - 66px); }
   .task-panel-header, .task-panel-scroll { padding-left: 18px; padding-right: 18px; }
+  .workload-compare { grid-template-columns: 1fr; }
+  .workload-compare > svg { transform: rotate(90deg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -500,6 +512,8 @@ textarea.field { resize: vertical; line-height: 1.5; }
 .calendar-weekdays { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 8px; margin-bottom: 8px; }
 .calendar-weekdays span { padding: 4px 6px; color: #7a877f; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; text-align: center; }
 .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0,1fr)); gap: 8px; }
+.calendar-board-scroll { min-width: 0; }
+.calendar-scroll-hint { display: none; }
 .calendar-grid.is-week .calendar-cell { min-height: 240px; }
 .calendar-cell { position: relative; min-height: 104px; padding: 8px; border: 1px solid #e2e7e0; border-radius: 13px; background: #fffefa; cursor: pointer; transition: border-color 180ms ease, background 180ms ease; display: flex; flex-direction: column; gap: 6px; }
 .calendar-cell:hover { border-color: #b8c6ba; }
@@ -558,11 +572,16 @@ textarea.field { resize: vertical; line-height: 1.5; }
   .calendar-stat-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 800px) {
   .calendar-toolbar { flex-direction: column; align-items: stretch; }
-  .calendar-controls { justify-content: space-between; }
+  .calendar-nav { justify-content: space-between; }
+  .calendar-controls { justify-content: space-between; overflow-x: auto; padding-bottom: 2px; }
+  .calendar-nav-btn, .calendar-toolbar .btn-secondary, .view-toggle button { min-height: 44px; }
+  .calendar-scroll-hint { display: block; margin: -2px 0 9px; color: #5b6a62; font-size: 13px; }
+  .calendar-board-scroll { overflow-x: auto; padding-bottom: 8px; overscroll-behavior-inline: contain; scrollbar-gutter: stable; }
+  .calendar-board-scroll .calendar-weekdays, .calendar-board-scroll .calendar-grid { min-width: 560px; }
   .calendar-weekdays span { font-size: 10px; }
-  .calendar-cell { min-height: 72px; padding: 6px; }
+  .calendar-cell { min-height: 82px; padding: 7px; }
   .calendar-grid.is-week .calendar-cell { min-height: 150px; }
   .calendar-task-label { display: none; }
   .calendar-task-pill { justify-content: center; padding: 4px; }
@@ -616,10 +635,13 @@ textarea.field { resize: vertical; line-height: 1.5; }
   .all-projects-grid { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 800px) {
+  .project-filter-tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; overscroll-behavior-inline: contain; }
+  .filter-tab { flex: 0 0 auto; min-height: 44px; }
   .all-project-meta-row { align-items: flex-start; }
   .all-project-progress { margin-left: 0; }
   .all-project-media { height: 130px; }
+  .all-project-footer .btn { width: 100%; }
 }
 
 /* Project canvas overview */
@@ -687,7 +709,7 @@ textarea.field { resize: vertical; line-height: 1.5; }
   .canvas-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 800px) {
   .canvas-overview { margin-bottom: 20px; }
   .canvas-info-grid { grid-template-columns: 1fr; }
   .canvas-hero-content { padding: 18px; }
@@ -861,9 +883,14 @@ textarea.field { resize: vertical; line-height: 1.5; }
 .compile-preview-format span { font-size: 12px; color: #5b6a62; }
 .compile-modal-footer { flex-shrink: 0; padding: 18px 28px 26px; border-top: 1px solid #d9e0d7; background: #fffefa; border-radius: 0 0 22px 22px; }
 
-@media (max-width: 760px) {
+@media (max-width: 800px) {
   .compile-modal-panel { max-height: 92vh; }
   .compile-modal-grid { grid-template-columns: 1fr; }
   .compile-preview { position: static; }
+  .compile-modal-panel .section-head { padding: 22px 18px 0; }
+  .compile-modal-scroll { padding: 0 18px 20px; }
+  .compile-modal-footer { padding: 16px 18px 20px; }
+  .compile-upload-row { flex-direction: column; align-items: stretch; }
+  .compile-upload-row .btn { width: 100%; }
 }
 

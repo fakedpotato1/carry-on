@@ -67,6 +67,7 @@
   justify-content: flex-end;
 }
 .back-button {
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: 6px;

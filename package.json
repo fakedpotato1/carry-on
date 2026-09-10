@@ -11,7 +11,8 @@
     "qa:document-icons": "node qa/verify-document-icons.mjs",
     "qa:canvas-dates": "node qa/verify-canvas-dates.mjs",
     "qa:task-status": "node qa/verify-task-status.mjs",
-    "qa:calendar": "node qa/verify-calendar.mjs"
+    "qa:calendar": "node qa/verify-calendar.mjs",
+    "qa:responsive": "node qa/verify-responsive.mjs"
   },
   "dependencies": {
     "@pdf-lib/standard-fonts": "^1.0.0",

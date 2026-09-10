@@ -3,12 +3,18 @@ import { chromium } from 'playwright-core'
 const base = 'http://127.0.0.1:5173'
 const routes = [
   '/',
+  '/signup',
+  '/dashboard',
+  '/projects',
+  '/calendar',
+  '/profile',
   '/project/new',
   '/project/urban-heat/canvas',
   '/project/urban-heat/evidence',
   '/project/urban-heat/lecturer-email',
   '/project/urban-heat/rubric-evaluation',
 ]
+const shellRoutes = routes.filter((route) => !['/', '/signup'].includes(route))
 
 const browser = await chromium.launch({ executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', headless: true })
 const errors = []
@@ -19,11 +25,12 @@ desktop.on('console', (message) => { if (message.type() === 'error') errors.push
 
 for (const route of routes) {
   const response = await desktop.goto(`${base}${route}`, { waitUntil: 'networkidle' })
+  const firstHeading = desktop.locator('h1, h2').first()
   results.push({
     route,
     status: response,
     httpStatus: response?.status(),
-    h1: (await desktop.locator('h1').first().textContent())?.trim(),
+    heading: (await firstHeading.textContent())?.trim(),
     overflow: await desktop.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
     sidebarLinks: await desktop.locator('aside.side-nav nav a').count(),
   })
@@ -34,8 +41,9 @@ await desktop.getByRole('button', { name: 'Coding' }).click()
 if (!(await desktop.getByRole('button', { name: 'Connect repository' }).isVisible())) errors.push('Coding type did not show GitHub connection')
 await desktop.getByRole('button', { name: 'Report' }).click()
 if (!(await desktop.getByRole('button', { name: 'Connect document' }).isVisible())) errors.push('Report type did not show Google Docs connection')
+await desktop.getByLabel('Project title').fill('Urban Heat')
 await desktop.getByRole('button', { name: 'Analyze and create draft' }).click()
-await desktop.waitForURL('**/project/urban-heat/canvas', { timeout: 6000 })
+await desktop.waitForURL('**/project/*/canvas', { timeout: 6000 })
 try { await desktop.getByText('Draft plan', { exact: true }).waitFor({ state: 'visible', timeout: 3000 }) } catch { errors.push('Create Project did not open Draft canvas') }
 await desktop.screenshot({ path: 'qa/canvas-draft-desktop.png', fullPage: true })
 await desktop.getByRole('button', { name: 'Confirm Plan' }).click()
@@ -81,7 +89,7 @@ const mobileMetrics = await mobile.evaluate(() => ({ innerWidth: window.innerWid
 await mobile.screenshot({ path: 'qa/canvas-active-mobile.png', fullPage: true })
 await mobile.getByRole('button', { name: 'Open navigation menu' }).click()
 const mobileMenuLinks = await mobile.locator('#mobile-primary-menu a').count()
-if (mobileMenuLinks !== 1) errors.push(`Mobile navigation has ${mobileMenuLinks} links instead of 1`)
+if (mobileMenuLinks !== 4) errors.push(`Mobile navigation has ${mobileMenuLinks} links instead of 4`)
 
 const responsive = []
 for (const width of [768, 1024]) {
@@ -96,4 +104,4 @@ for (const width of [768, 1024]) {
 console.log(JSON.stringify({ routes: results.map(({ status, ...result }) => result), mobile: mobileMetrics, mobileMenuLinks, responsive, errors }, null, 2))
 await browser.close()
 
-if (errors.length || results.some((result) => result.httpStatus !== 200 || result.overflow || result.sidebarLinks !== 1) || mobileMetrics.overflow) process.exit(1)
+if (errors.length || results.some((result) => result.httpStatus !== 200 || result.overflow || result.sidebarLinks !== (shellRoutes.includes(result.route) ? 3 : 0)) || mobileMetrics.overflow) process.exit(1)

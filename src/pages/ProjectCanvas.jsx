@@ -88,7 +88,7 @@ export default function ProjectCanvas() {
   const [nodes, setNodes, onNodesChange] = useNodesState(firstNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(makeEdges(firstNodes, mode))
   const [selectedId, setSelectedId] = useState(null)
-  const [legendOpen, setLegendOpen] = useState(true)
+  const [legendOpen, setLegendOpen] = useState(() => typeof window === 'undefined' || !window.matchMedia('(max-width: 800px)').matches)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [compileOpen, setCompileOpen] = useState(false)
   const [toast, setToast] = useState('')

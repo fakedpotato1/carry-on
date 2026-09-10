@@ -85,8 +85,25 @@ function PrimaryNav({ collapsed = false, onNavigate }) {
 }
 
 export default function AppShell() {
+  const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    setMenuOpen(false)
+  }, [location.pathname])
+
+  useEffect(() => {
+    if (!menuOpen) return undefined
+    const previousOverflow = document.body.style.overflow
+    const closeOnEscape = (event) => { if (event.key === 'Escape') setMenuOpen(false) }
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [menuOpen])
 
   return (
     <div className={`app-shell ${collapsed ? 'is-collapsed' : ''}`}>
@@ -111,7 +128,7 @@ export default function AppShell() {
           <button className="icon-button" aria-expanded={menuOpen} aria-controls="mobile-primary-menu" aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={21} aria-hidden="true" /> : <Menu size={21} aria-hidden="true" />}</button>
         </header>
         {menuOpen && (
-          <div id="mobile-primary-menu" className="mobile-menu">
+          <div id="mobile-primary-menu" className="mobile-menu" aria-label="Mobile navigation">
             <PrimaryNav onNavigate={() => setMenuOpen(false)} />
             <div className="side-nav-footer">
               <ProfileLink onNavigate={() => setMenuOpen(false)} />

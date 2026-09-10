@@ -234,25 +234,28 @@ export default function Calendar() {
               </div>
             </div>
 
+            {view !== 'list' && <p className="calendar-scroll-hint">Swipe sideways to see the full week.</p>}
             {view !== 'list' && (
-              <div className="calendar-weekdays">
-                {WEEKDAYS.map((day) => <span key={day}>{day}</span>)}
-              </div>
-            )}
+              <div className="calendar-board-scroll">
+                <div className="calendar-weekdays">
+                  {WEEKDAYS.map((day) => <span key={day}>{day}</span>)}
+                </div>
 
-            {view === 'month' && (
-              <div className="calendar-grid">
-                {monthWeeks.flat().map((day) => (
-                  <DayCell key={dateKey(day)} day={day} monthRef={viewDate} today={today} selectedDate={selectedDate} tasksByDate={tasksByDate} maxVisible={2} onSelect={handleSelectDay} />
-                ))}
-              </div>
-            )}
+                {view === 'month' && (
+                  <div className="calendar-grid">
+                    {monthWeeks.flat().map((day) => (
+                      <DayCell key={dateKey(day)} day={day} monthRef={viewDate} today={today} selectedDate={selectedDate} tasksByDate={tasksByDate} maxVisible={2} onSelect={handleSelectDay} />
+                    ))}
+                  </div>
+                )}
 
-            {view === 'week' && (
-              <div className="calendar-grid is-week">
-                {weekRow.map((day) => (
-                  <DayCell key={dateKey(day)} day={day} monthRef={day} today={today} selectedDate={selectedDate} tasksByDate={tasksByDate} maxVisible={8} onSelect={handleSelectDay} />
-                ))}
+                {view === 'week' && (
+                  <div className="calendar-grid is-week">
+                    {weekRow.map((day) => (
+                      <DayCell key={dateKey(day)} day={day} monthRef={day} today={today} selectedDate={selectedDate} tasksByDate={tasksByDate} maxVisible={8} onSelect={handleSelectDay} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
