@@ -7,7 +7,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import {
   AlertTriangle, ArrowUpRight, Calendar, CalendarClock, Check, CheckCircle2, ChevronDown, ChevronRight, ChevronUp,
-  Code2, Download, FileCheck2, FileText, FolderOpen, Github, ImagePlus, Mail, Plus, Sparkles, Table, Trash2, UserPlus, X,
+  Code2, Download, FileCheck2, FileText, FolderOpen, Github, ImagePlus, Layers, Mail, Plus, Sparkles, Table, Trash2, UserPlus, X,
 } from 'lucide-react'
 import AIAdvisory from '../components/AIAdvisory'
 import Avatar from '../components/Avatar'
@@ -328,6 +328,7 @@ export default function ProjectCanvas() {
               <Link to={`/project/${id}/lecturer-email`} className="canvas-quick-action"><Mail size={20} aria-hidden="true" />Draft Lecturer Email</Link>
               <Link to={`/project/${id}/evidence`} className="canvas-quick-action"><FileText size={20} aria-hidden="true" />Evidence Pack</Link>
               <Link to={`/project/${id}/rubric-evaluation`} className="canvas-quick-action"><FileCheck2 size={20} aria-hidden="true" />Rubric Evaluation</Link>
+              {currentProject.type === 'Report' && <Link to={`/project/${id}/compile-report`} className="canvas-quick-action"><Layers size={20} aria-hidden="true" />Compile Report</Link>}
               <button type="button" className="canvas-quick-action" onClick={handleExportInfo}><Download size={20} aria-hidden="true" />Export Project Info</button>
             </div>
           </Card>

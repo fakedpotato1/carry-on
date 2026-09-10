@@ -829,3 +829,11 @@ textarea.field { resize: vertical; line-height: 1.5; }
   .signup-step-card .step-default,
   .signup-step-card .footer-container { padding-left: 24px; padding-right: 24px; }
 }
+
+/* Compile Report */
+.compile-upload-slot { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border: 1px solid #d9e0d7; border-radius: 14px; background: #fffefa; }
+.compile-upload-slot-sm { padding: 10px 14px; }
+.compile-upload-info { display: flex; flex-direction: column; gap: 2px; }
+.compile-upload-info strong { color: #26352e; font-size: 14.5px; }
+.compile-upload-hint { color: #7a877f; font-size: 12.5px; }
+.compile-upload-filename { display: inline-flex; align-items: center; gap: 6px; margin-top: 3px; color: #345b49; font-size: 12.5px; font-weight: 700; }
