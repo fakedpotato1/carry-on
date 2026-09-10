@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "qa": "node qa/verify.mjs",
-    "qa:document-icons": "node qa/verify-document-icons.mjs"
+    "qa:document-icons": "node qa/verify-document-icons.mjs",
+    "qa:canvas-dates": "node qa/verify-canvas-dates.mjs"
   },
   "dependencies": {
     "@pdf-lib/standard-fonts": "^1.0.0",

@@ -643,7 +643,7 @@ textarea.field { resize: vertical; line-height: 1.5; }
 .canvas-hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 .canvas-hero-main h1 { margin: 0; font-family: "Lora", Georgia, serif; font-size: clamp(24px, 2.4vw, 32px); line-height: 1.2; }
 .canvas-hero-main p.muted { margin: 8px 0 0; color: #5b6a62; }
-.canvas-hero-dates { display: flex; flex-wrap: wrap; align-items: center; gap: 26px; flex: 0 0 auto; }
+.canvas-hero-dates { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 26px; flex: 0 0 auto; }
 .canvas-date-block { display: flex; align-items: flex-start; gap: 10px; }
 .canvas-date-icon { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; color: #345b49; background: #e6eee8; border-radius: 10px; }
 .canvas-date-icon-ok { color: #2a4a3b; background: #e6eee8; }
