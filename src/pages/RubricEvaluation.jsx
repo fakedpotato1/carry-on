@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom'
 import AIAdvisory from '../components/AIAdvisory'
 import Button from '../components/Button'
 import Card from '../components/Card'
-import FlowSteps from '../components/FlowSteps'
 import PageHeader from '../components/PageHeader'
 import { rubric } from '../data/mockData'
 
@@ -11,7 +10,6 @@ export default function RubricEvaluation() {
   const { id } = useParams()
   return (
     <div className="page">
-      <FlowSteps current="Improve" />
       <PageHeader eyebrow="Final review" title="Rubric evaluation" description="Use this estimate to find gaps before submission. It is advisory only and is not an official mark or lecturer judgment." actions={<Button to={`/project/${id}/canvas`} variant="secondary">Return to canvas</Button>} />
       <AIAdvisory title="Estimated overall score: 74 / 100" label="AI Estimate · Advisory only"><p>Calculated from the current mock report against the uploaded rubric. The lecturer may interpret evidence and criteria differently.</p></AIAdvisory>
       <div className="grid-2" style={{ marginTop: 20, alignItems: 'start' }}>

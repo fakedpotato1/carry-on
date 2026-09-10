@@ -100,12 +100,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .eyebrow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #688876; font-size: 13px; line-height: 1.2; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; }
 .page-title { margin: 0; font-family: "Lora", Georgia, serif; font-size: clamp(28px, 3vw, 36px); line-height: 1.2; font-weight: 600; letter-spacing: -.025em; }
 .page-description { max-width: 680px; margin: 10px 0 0; color: #5b6a62; font-size: 17px; line-height: 1.55; }
-.flow-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 28px; padding: 12px 16px; border: 1px solid #d9e0d7; background: rgba(255,254,250,.72); border-radius: 16px; }
-.flow-step { display: flex; align-items: center; gap: 7px; color: #7b877f; font-size: 13px; font-weight: 600; }
-.flow-step.current { color: #345b49; }
-.flow-step-dot { width: 7px; height: 7px; border-radius: 999px; background: #c7d0c8; }
-.flow-step.current .flow-step-dot { background: #688876; box-shadow: 0 0 0 4px #e6eee8; }
-.flow-arrow { color: #adb6af; }
 
 .card { background: #fffefa; border: 1px solid #d9e0d7; border-radius: 20px; padding: 24px; box-shadow: 0 6px 24px rgba(38,53,46,.055); }
 .card-soft { background: #f1f3ec; box-shadow: none; }
@@ -251,7 +245,6 @@ textarea.field { resize: vertical; line-height: 1.5; }
   .page { width: calc(100% - 32px); padding: 28px 0 56px; }
   .page-header { display: grid; margin-bottom: 24px; }
   .page-header .button-row { width: 100%; }
-  .flow-steps { overflow-x: auto; flex-wrap: nowrap; }
   .grid-2, .grid-3, .form-grid, .choice-grid { grid-template-columns: 1fr; }
   .form-full { grid-column: auto; }
   .card { padding: 20px; }

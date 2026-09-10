@@ -3,7 +3,6 @@ import { Check, Download, FileText, Info } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 import Button from '../components/Button'
 import Card from '../components/Card'
-import FlowSteps from '../components/FlowSteps'
 import PageHeader from '../components/PageHeader'
 import Timeline from '../components/Timeline'
 import { evidenceTimeline } from '../data/mockData'
@@ -13,7 +12,6 @@ export default function EvidencePack() {
   const [exported, setExported] = useState(false)
   return (
     <div className="page">
-      <FlowSteps current="Escalate" />
       <PageHeader eyebrow="Factual record" title="Evidence pack" description="A scannable history of what the team agreed, what occurred, and how recovery was attempted—without assigning intent or blame." actions={<Button icon={Download} onClick={() => setExported(true)}>Export mock PDF</Button>} />
       <div className="notice" style={{ marginBottom: 20 }}><Info size={21} /><div><strong>Context, not a verdict</strong><p>Connected activity can be incomplete. The team should review this pack and add any missing offline context before sharing it.</p></div></div>
       <div className="grid-2" style={{ alignItems: 'start' }}>
