@@ -1,13 +1,15 @@
-import { useState } from 'react'
-import { AlertTriangle, ArrowRight, CalendarDays, CheckCheck, CheckCircle2, Code2, FileText, FolderOpen, FolderPlus, Github, ImagePlus, LayoutGrid, MoreHorizontal, Plus, Table } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { AlertTriangle, ArrowRight, CalendarDays, CheckCheck, CheckCircle2, Code2, FileText, FolderOpen, FolderPlus, Github, ImagePlus, Plus, LayoutGrid, Table } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Avatar from '../components/Avatar'
 import Button from '../components/Button'
 import Card from '../components/Card'
+import Modal from '../components/Modal'
 import PageHeader from '../components/PageHeader'
+import ProjectCardMenu from '../components/ProjectCardMenu'
 import { team } from '../data/mockData'
 import { resolveCover, setStoredCover } from '../lib/covers'
-import { getAllProjects } from '../lib/projectsStore'
+import { deleteProject, getAllProjects, PROJECTS_CHANGED_EVENT } from '../lib/projectsStore'
 
 const FILTERS = [
   { key: 'all', label: 'All Projects', icon: LayoutGrid, match: () => true },
@@ -24,7 +26,7 @@ const DOC_META = {
   code: { icon: Github, bg: '#e5e5e0', color: '#26352e' },
 }
 
-function ProjectCard({ item, cover, onCoverChange }) {
+function ProjectCard({ item, cover, onCoverChange, onRequestDelete }) {
   const shortDate = item.deadline.split(',')[0]
   return (
     <Card className="all-project-card">
@@ -39,7 +41,7 @@ function ProjectCard({ item, cover, onCoverChange }) {
         <div className="project-card-top">
           <span className="assignment-icon">{item.type === 'Coding' ? <Code2 size={21} aria-hidden="true" /> : <FileText size={21} aria-hidden="true" />}</span>
           <span className="project-type">{item.type} assignment</span>
-          <button type="button" className="icon-btn project-card-menu" aria-label={`More options for ${item.title}`}><MoreHorizontal size={18} aria-hidden="true" /></button>
+          <ProjectCardMenu label={item.title} onDelete={() => onRequestDelete(item)} />
         </div>
 
         <h2>{item.title}</h2>
@@ -93,11 +95,18 @@ function ProjectCard({ item, cover, onCoverChange }) {
 }
 
 export default function Projects() {
-  const projects = getAllProjects()
+  const [projects, setProjects] = useState(() => getAllProjects())
   const [covers, setCovers] = useState(() =>
     Object.fromEntries(projects.map((item) => [item.id, resolveCover(item)]).filter(([, url]) => url))
   )
   const [filter, setFilter] = useState('all')
+  const [pendingDelete, setPendingDelete] = useState(null)
+
+  useEffect(() => {
+    function refresh() { setProjects(getAllProjects()) }
+    window.addEventListener(PROJECTS_CHANGED_EVENT, refresh)
+    return () => window.removeEventListener(PROJECTS_CHANGED_EVENT, refresh)
+  }, [])
 
   function handleCoverChange(id, event) {
     const file = event.target.files?.[0]
@@ -109,6 +118,13 @@ export default function Projects() {
       setStoredCover(id, dataUrl)
     }
     reader.readAsDataURL(file)
+  }
+
+  function confirmDelete() {
+    if (!pendingDelete) return
+    deleteProject(pendingDelete.id)
+    setProjects(getAllProjects())
+    setPendingDelete(null)
   }
 
   const activeFilter = FILTERS.find((item) => item.key === filter) ?? FILTERS[0]
@@ -137,7 +153,7 @@ export default function Projects() {
 
       <div className="all-projects-grid">
         {filtered.map((item) => (
-          <ProjectCard key={item.id} item={item} cover={covers[item.id]} onCoverChange={(event) => handleCoverChange(item.id, event)} />
+          <ProjectCard key={item.id} item={item} cover={covers[item.id]} onCoverChange={(event) => handleCoverChange(item.id, event)} onRequestDelete={setPendingDelete} />
         ))}
 
         {filter === 'all' && (
@@ -153,6 +169,20 @@ export default function Projects() {
       {filtered.length === 0 && (
         <p className="muted" style={{ marginTop: 8 }}>No projects match this filter yet.</p>
       )}
+
+      <Modal
+        open={!!pendingDelete}
+        title="Delete this assignment?"
+        onClose={() => setPendingDelete(null)}
+        actions={<>
+          <Button variant="secondary" onClick={() => setPendingDelete(null)}>Cancel</Button>
+          <Button variant="primary" onClick={confirmDelete}>Delete assignment</Button>
+        </>}
+      >
+        <p className="muted">
+          {pendingDelete ? <>“{pendingDelete.title}” and its canvas, tasks, and evidence will be removed from LoadShift. This can't be undone.</> : null}
+        </p>
+      </Modal>
     </div>
   )
 }

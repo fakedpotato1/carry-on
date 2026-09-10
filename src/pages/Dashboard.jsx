@@ -1,15 +1,17 @@
-import { useState } from 'react'
-import { AlertTriangle, ArrowRight, CalendarClock, CalendarDays, ChevronRight, Code2, FileText, FolderKanban, ImagePlus, Link2, MoreHorizontal, Plus, Users } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { AlertTriangle, ArrowRight, CalendarClock, CalendarDays, ChevronRight, Code2, FileText, FolderKanban, ImagePlus, Link2, Plus, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Avatar from '../components/Avatar'
 import Button from '../components/Button'
 import Card from '../components/Card'
+import Modal from '../components/Modal'
 import PageHeader from '../components/PageHeader'
 import ProgressBar from '../components/ProgressBar'
+import ProjectCardMenu from '../components/ProjectCardMenu'
 import { currentUser, dashboardOverview, team, upcoming } from '../data/mockData'
 import { resolveCurrentUser } from '../lib/authStore'
 import { resolveCover, setStoredCover } from '../lib/covers'
-import { getAllProjects } from '../lib/projectsStore'
+import { deleteProject, getAllProjects, PROJECTS_CHANGED_EVENT } from '../lib/projectsStore'
 
 const VISIBLE_MEMBERS = 4
 
@@ -24,12 +26,19 @@ function buildGreeting() {
 
 export default function Dashboard() {
   const user = resolveCurrentUser(currentUser)
-  const projects = getAllProjects()
+  const [projects, setProjects] = useState(() => getAllProjects())
   const [covers, setCovers] = useState(() =>
     Object.fromEntries(projects.map((item) => [item.id, resolveCover(item)]).filter(([, url]) => url))
   )
   const [copiedId, setCopiedId] = useState(null)
+  const [pendingDelete, setPendingDelete] = useState(null)
   const { timeOfDay, dateLabel } = buildGreeting()
+
+  useEffect(() => {
+    function refresh() { setProjects(getAllProjects()) }
+    window.addEventListener(PROJECTS_CHANGED_EVENT, refresh)
+    return () => window.removeEventListener(PROJECTS_CHANGED_EVENT, refresh)
+  }, [])
 
   const atRiskCount = projects.filter((item) => item.atRisk).length
   const projectsById = Object.fromEntries(projects.map((item) => [item.id, item]))
@@ -57,6 +66,13 @@ export default function Dashboard() {
     if (navigator.clipboard?.writeText) navigator.clipboard.writeText(link).catch(() => {})
     setCopiedId(id)
     window.setTimeout(() => setCopiedId((current) => (current === id ? null : current)), 1600)
+  }
+
+  function confirmDelete() {
+    if (!pendingDelete) return
+    deleteProject(pendingDelete.id)
+    setProjects(getAllProjects())
+    setPendingDelete(null)
   }
 
   return (
@@ -94,7 +110,7 @@ export default function Dashboard() {
                     <div className="project-card-top">
                       <span className="assignment-icon">{item.type === 'Coding' ? <Code2 size={21} aria-hidden="true" /> : <FileText size={21} aria-hidden="true" />}</span>
                       <span className="project-type">{item.type} assignment</span>
-                      <button type="button" className="icon-btn project-card-menu" aria-label={`More options for ${item.title}`}><MoreHorizontal size={18} aria-hidden="true" /></button>
+                      <ProjectCardMenu label={item.title} onDelete={() => setPendingDelete(item)} />
                     </div>
                     <h2>{item.title}</h2>
                     <p className="muted">{item.module}</p>
@@ -147,6 +163,20 @@ export default function Dashboard() {
           </Card>
         </aside>
       </div>
+
+      <Modal
+        open={!!pendingDelete}
+        title="Delete this assignment?"
+        onClose={() => setPendingDelete(null)}
+        actions={<>
+          <Button variant="secondary" onClick={() => setPendingDelete(null)}>Cancel</Button>
+          <Button variant="primary" onClick={confirmDelete}>Delete assignment</Button>
+        </>}
+      >
+        <p className="muted">
+          {pendingDelete ? <>“{pendingDelete.title}” and its canvas, tasks, and evidence will be removed from LoadShift. This can't be undone.</> : null}
+        </p>
+      </Modal>
     </div>
   )
 }
