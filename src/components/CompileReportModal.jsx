@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import JSZip from 'jszip'
 import {
-  AlertTriangle, Check, CheckCircle2, Download, FileCheck2, FileText, Info, Layers, Sparkles,
+  AlertTriangle, Check, CheckCircle2, Download, FileCheck2, FileText, Info, Layers, Loader2, Sparkles,
 } from 'lucide-react'
 import Button from './Button'
 import Modal from './Modal'
@@ -15,18 +16,86 @@ const FORMAT_PRESETS = [
 
 const LOADING_STEPS = ['Ordering sections by assignment', 'Applying the required font & spacing', 'Attaching cover and marking rubric']
 
+// .docx files are zip archives — unzip with JSZip and read the raw paragraph
+// text out of word/document.xml so the preview shows the document's actual
+// content, not just its filename. This only works for editable, zip-based
+// .docx files, which is exactly why uploads are restricted to that format.
+async function extractDocxParagraphs(file) {
+  const buffer = await file.arrayBuffer()
+  const zip = await JSZip.loadAsync(buffer)
+  const entry = zip.file('word/document.xml')
+  if (!entry) throw new Error('Not a valid .docx file')
+  const xml = await entry.async('text')
+  const doc = new DOMParser().parseFromString(xml, 'application/xml')
+  if (doc.querySelector('parsererror')) throw new Error('Could not parse document')
+
+  const paragraphs = Array.from(doc.getElementsByTagName('w:p'))
+    .map((p) => {
+      const styleNode = p.getElementsByTagName('w:pStyle')[0]
+      const styleVal = styleNode?.getAttribute('w:val') || ''
+      const heading = /Heading|Title/i.test(styleVal)
+      const text = Array.from(p.getElementsByTagName('w:t')).map((t) => t.textContent).join('')
+      return { text: text.trim(), heading }
+    })
+    .filter((p) => p.text.length > 0)
+
+  if (paragraphs.length === 0) throw new Error('This document looks empty')
+  return paragraphs
+}
+
+function DocSnippet({ paragraphs, compact }) {
+  if (!paragraphs?.length) return null
+  return (
+    <div className={`compile-doc-snippet ${compact ? 'compile-doc-snippet-sm' : ''}`}>
+      {paragraphs.map((p, index) => (p.heading
+        ? <strong key={index}>{p.text}</strong>
+        : <p key={index}>{p.text}</p>))}
+    </div>
+  )
+}
+
 function UploadSlot({ label, hint, file, onChange, small }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  async function handleFile(event) {
+    const picked = event.target.files?.[0]
+    event.target.value = ''
+    if (!picked) return
+
+    if (!picked.name.toLowerCase().endsWith('.docx')) {
+      setError('Please upload an editable .docx file — PDFs and other formats can’t be edited or compiled.')
+      return
+    }
+
+    setError(null)
+    setBusy(true)
+    try {
+      const paragraphs = await extractDocxParagraphs(picked)
+      onChange({ name: picked.name, paragraphs })
+    } catch (err) {
+      setError('Couldn’t read this file — make sure it’s a valid, unprotected .docx document.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div className={`compile-upload-slot ${small ? 'compile-upload-slot-sm' : ''}`}>
-      <div className="compile-upload-info">
-        <strong>{label}</strong>
-        {hint && <span className="compile-upload-hint">{hint}</span>}
-        {file && <span className="compile-upload-filename"><FileCheck2 size={14} aria-hidden="true" />{file}</span>}
+      <div className="compile-upload-row">
+        <div className="compile-upload-info">
+          <strong>{label}</strong>
+          {hint && <span className="compile-upload-hint">{hint}</span>}
+          {file && <span className="compile-upload-filename"><FileCheck2 size={14} aria-hidden="true" />{file.name}</span>}
+          {busy && <span className="compile-upload-status"><Loader2 size={13} aria-hidden="true" className="spin-icon" />Reading document…</span>}
+          {error && <span className="compile-upload-error"><AlertTriangle size={13} aria-hidden="true" />{error}</span>}
+        </div>
+        <label className="btn btn-secondary canvas-upload-btn">
+          {file ? 'Replace' : 'Upload'}
+          <input type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="visually-hidden" onChange={handleFile} />
+        </label>
       </div>
-      <label className="btn btn-secondary canvas-upload-btn">
-        {file ? 'Replace' : 'Upload'}
-        <input type="file" className="visually-hidden" onChange={(event) => onChange(event.target.files?.[0]?.name || null)} />
-      </label>
+      {file && <DocSnippet paragraphs={file.paragraphs} compact={small} />}
     </div>
   )
 }
@@ -123,13 +192,25 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
             </div>
             <div className="section-head"><h2 className="section-title">Document outline</h2><Layers size={21} className="muted" /></div>
             <div className="stack-sm">
-              <div className="notice"><FileText size={18} /><div><strong>Cover</strong><p>{coverFile}</p></div></div>
+              <div className="notice">
+                <FileText size={18} />
+                <div><strong>Cover</strong><p>{coverFile.name}</p><DocSnippet paragraphs={coverFile.paragraphs} /></div>
+              </div>
               {contentMode === 'merged' ? (
-                <div className="notice"><FileText size={18} /><div><strong>Content</strong><p>{mergedFile} (already merged by the team)</p></div></div>
+                <div className="notice">
+                  <FileText size={18} />
+                  <div><strong>Content</strong><p>{mergedFile.name} (already merged by the team)</p><DocSnippet paragraphs={mergedFile.paragraphs} /></div>
+                </div>
               ) : attachedSections.map((task, index) => (
-                <div className="notice" key={task.id}><FileText size={18} /><div><strong>Section {index + 1} · {task.title}</strong><p>{task.owner} · {sectionFiles[task.id]}</p></div></div>
+                <div className="notice" key={task.id}>
+                  <FileText size={18} />
+                  <div><strong>Section {index + 1} · {task.title}</strong><p>{task.owner} · {sectionFiles[task.id].name}</p><DocSnippet paragraphs={sectionFiles[task.id].paragraphs} /></div>
+                </div>
               ))}
-              <div className="notice"><FileCheck2 size={18} /><div><strong>Marking rubric</strong><p>{rubricFile} · attached at the end</p></div></div>
+              <div className="notice">
+                <FileCheck2 size={18} />
+                <div><strong>Marking rubric</strong><p>{rubricFile.name} · attached at the end</p><DocSnippet paragraphs={rubricFile.paragraphs} /></div>
+              </div>
             </div>
             <p className="small muted" style={{ marginTop: 16 }}>Formatting applied: {formatSummary}</p>
           </>
@@ -161,6 +242,7 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
 
               <div>
                 <h2 className="section-title">Report cover & marking rubric</h2>
+                <p className="section-copy">Editable .docx files only — PDFs can't be compiled into the final document.</p>
                 <div className="stack-sm" style={{ marginTop: 12 }}>
                   <UploadSlot label="Report cover" hint="Title page to place at the front" file={coverFile} onChange={setCoverFile} />
                   <UploadSlot label="Marking rubric" hint="Attached at the end of the document" file={rubricFile} onChange={setRubricFile} />
@@ -189,7 +271,7 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
                         label={`Section ${index + 1} · ${task.title}`}
                         hint={task.owner}
                         file={sectionFiles[task.id]}
-                        onChange={(name) => setSectionFiles((current) => ({ ...current, [task.id]: name }))}
+                        onChange={(value) => setSectionFiles((current) => ({ ...current, [task.id]: value }))}
                       />
                     ))}
                   </div>
@@ -232,24 +314,40 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
               <div className="compile-preview-list">
                 <div className={`compile-preview-item ${!coverFile ? 'missing' : ''}`}>
                   <FileText size={14} aria-hidden="true" />
-                  <div><strong>Cover</strong><span>{coverFile || 'Not added yet'}</span></div>
+                  <div>
+                    <strong>Cover</strong>
+                    <span>{coverFile ? coverFile.name : 'Not added yet'}</span>
+                    {coverFile && <DocSnippet paragraphs={coverFile.paragraphs} compact />}
+                  </div>
                 </div>
 
                 {contentMode === 'merged' ? (
                   <div className={`compile-preview-item ${!mergedFile ? 'missing' : ''}`}>
                     <FileText size={14} aria-hidden="true" />
-                    <div><strong>Content</strong><span>{mergedFile || 'Not added yet'}</span></div>
+                    <div>
+                      <strong>Content</strong>
+                      <span>{mergedFile ? mergedFile.name : 'Not added yet'}</span>
+                      {mergedFile && <DocSnippet paragraphs={mergedFile.paragraphs} compact />}
+                    </div>
                   </div>
                 ) : sectionTasks.map((task, index) => (
                   <div className={`compile-preview-item ${!sectionFiles[task.id] ? 'missing' : ''}`} key={task.id}>
                     <FileText size={14} aria-hidden="true" />
-                    <div><strong>Section {index + 1} · {task.owner}</strong><span>{sectionFiles[task.id] || 'Not attached yet'}</span></div>
+                    <div>
+                      <strong>Section {index + 1} · {task.owner}</strong>
+                      <span>{sectionFiles[task.id] ? sectionFiles[task.id].name : 'Not attached yet'}</span>
+                      {sectionFiles[task.id] && <DocSnippet paragraphs={sectionFiles[task.id].paragraphs} compact />}
+                    </div>
                   </div>
                 ))}
 
                 <div className={`compile-preview-item ${!rubricFile ? 'missing' : ''}`}>
                   <FileCheck2 size={14} aria-hidden="true" />
-                  <div><strong>Marking rubric</strong><span>{rubricFile || 'Not added yet'}</span></div>
+                  <div>
+                    <strong>Marking rubric</strong>
+                    <span>{rubricFile ? rubricFile.name : 'Not added yet'}</span>
+                    {rubricFile && <DocSnippet paragraphs={rubricFile.paragraphs} compact />}
+                  </div>
                 </div>
               </div>
               <div className="compile-preview-format">
