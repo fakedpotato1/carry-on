@@ -21,6 +21,20 @@ const LOADING_STEPS = ['Ordering sections by assignment', 'Applying the required
 const PDF_REGULAR_FONTS = { 'Times New Roman': StandardFonts.TimesRoman, Arial: StandardFonts.Helvetica, Calibri: StandardFonts.Helvetica }
 const PDF_BOLD_FONTS = { 'Times New Roman': StandardFonts.TimesRomanBold, Arial: StandardFonts.HelveticaBold, Calibri: StandardFonts.HelveticaBold }
 
+const W_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+
+// Where w:spacing and w:rFonts/w:sz/w:szCs are allowed to sit relative to
+// their siblings inside <w:pPr>/<w:rPr> — used so anything we insert lands
+// in a schema-valid position instead of just being appended at the end.
+const PPR_ORDER = ['w:pStyle', 'w:keepNext', 'w:keepLines', 'w:pageBreakBefore', 'w:framePr', 'w:widowControl', 'w:numPr', 'w:suppressLineNumbers', 'w:pBdr', 'w:shd', 'w:tabs', 'w:suppressAutoHyphens', 'w:kinsoku', 'w:wordWrap', 'w:overflowPunct', 'w:topLinePunct', 'w:autoSpaceDE', 'w:autoSpaceDN', 'w:bidi', 'w:adjustRightInd', 'w:snapToGrid', 'w:spacing', 'w:ind', 'w:contextualSpacing', 'w:mirrorIndents', 'w:suppressOverlap', 'w:jc', 'w:textDirection', 'w:textAlignment', 'w:textboxTightWrap', 'w:outlineLvl', 'w:divId', 'w:cnfStyle', 'w:rPr']
+const RPR_ORDER = ['w:rStyle', 'w:rFonts', 'w:b', 'w:bCs', 'w:i', 'w:iCs', 'w:caps', 'w:smallCaps', 'w:strike', 'w:dstrike', 'w:outline', 'w:shadow', 'w:emboss', 'w:imprint', 'w:noProof', 'w:snapToGrid', 'w:vanish', 'w:webHidden', 'w:color', 'w:spacing', 'w:w', 'w:kern', 'w:position', 'w:sz', 'w:szCs', 'w:highlight', 'w:u', 'w:effect', 'w:bdr', 'w:shd', 'w:fitText', 'w:vertAlign', 'w:rtl', 'w:cs', 'w:em', 'w:lang', 'w:eastAsianLayout', 'w:specVanish']
+
+// Elements that reference something we don't carry over when splicing
+// documents together (embedded images, comments, bookmarks, page/section
+// setup, headers/footers) — dropped so nothing in the merged file points
+// at a relationship that no longer exists.
+const STRIP_TAGS = ['w:drawing', 'w:pict', 'w:bookmarkStart', 'w:bookmarkEnd', 'w:commentRangeStart', 'w:commentRangeEnd', 'w:commentReference', 'w:sectPr']
+
 function slugify(text) {
   return text.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'report'
 }
@@ -36,12 +50,28 @@ function downloadBlob(blob, filename) {
   URL.revokeObjectURL(url)
 }
 
-// .docx files are zip archives — unzip with JSZip and read the raw paragraph
-// text out of word/document.xml so the preview sidebar and the final
-// download show the document's actual content, not just its filename. This
-// only works for editable, zip-based .docx files, which is exactly why
+function cleanBodyNode(node) {
+  const clone = node.cloneNode(true)
+  STRIP_TAGS.forEach((tag) => {
+    Array.from(clone.getElementsByTagName(tag)).forEach((el) => el.parentNode?.removeChild(el))
+  })
+  // A hyperlink references its target URL via a relationship we don't carry
+  // over — keep the visible text, just drop the link wrapper around it.
+  Array.from(clone.getElementsByTagName('w:hyperlink')).forEach((link) => {
+    while (link.firstChild) link.parentNode.insertBefore(link.firstChild, link)
+    link.parentNode.removeChild(link)
+  })
+  return clone
+}
+
+// .docx files are zip archives — unzip with JSZip and read word/document.xml.
+// Two things come out of it: plain paragraph text (for the preview sidebar
+// and the compiled outline) and the raw, still-formatted XML nodes (for the
+// actual download — so the cover and rubric keep their original layout,
+// alignment, and tables untouched, and only the content gets reformatted).
+// Only works for editable, zip-based .docx files, which is exactly why
 // uploads are restricted to that format.
-async function extractDocxParagraphs(file) {
+async function extractDocxDocument(file) {
   const buffer = await file.arrayBuffer()
   const zip = await JSZip.loadAsync(buffer)
   const entry = zip.file('word/document.xml')
@@ -49,6 +79,13 @@ async function extractDocxParagraphs(file) {
   const xml = await entry.async('text')
   const doc = new DOMParser().parseFromString(xml, 'application/xml')
   if (doc.querySelector('parsererror')) throw new Error('Could not parse document')
+
+  const body = doc.getElementsByTagName('w:body')[0]
+  if (!body) throw new Error('Document has no body')
+
+  const bodyNodes = Array.from(body.childNodes)
+    .filter((node) => node.nodeType === 1 && node.tagName !== 'w:sectPr')
+    .map(cleanBodyNode)
 
   const paragraphs = Array.from(doc.getElementsByTagName('w:p'))
     .map((p) => {
@@ -61,7 +98,134 @@ async function extractDocxParagraphs(file) {
     .filter((p) => p.text.length > 0)
 
   if (paragraphs.length === 0) throw new Error('This document looks empty')
-  return paragraphs
+  return { paragraphs, bodyNodes }
+}
+
+// Inserts `el` among `parent`'s existing children at the position `order`
+// says it belongs, instead of just appending it at the end — keeps
+// <w:pPr>/<w:rPr> children in the sequence Word's schema expects.
+function insertInOrder(parent, el, order) {
+  const index = order.indexOf(el.tagName)
+  const ref = Array.from(parent.children).find((child) => {
+    const childIndex = order.indexOf(child.tagName)
+    return childIndex !== -1 && childIndex > index
+  })
+  parent.insertBefore(el, ref || null)
+}
+
+function setOrderedChild(parent, tag, order, attrs) {
+  Array.from(parent.children).filter((el) => el.tagName === tag).forEach((el) => parent.removeChild(el))
+  const el = parent.ownerDocument.createElementNS(W_NS, tag)
+  Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value))
+  insertInOrder(parent, el, order)
+  return el
+}
+
+// Overrides font/size/line-spacing on every run in `bodyNodes`, leaving
+// everything else (bold, italics, alignment, tables) untouched — this is
+// what "only the content changes font and spacing" actually does.
+function applyContentFormatting(bodyNodes, { font, size, line }) {
+  return bodyNodes.map((node) => {
+    const clone = node.cloneNode(true)
+    const paragraphs = clone.tagName === 'w:p' ? [clone] : Array.from(clone.getElementsByTagName('w:p'))
+    paragraphs.forEach((p) => {
+      let pPr = p.getElementsByTagName('w:pPr')[0]
+      if (!pPr) {
+        pPr = p.ownerDocument.createElementNS(W_NS, 'w:pPr')
+        p.insertBefore(pPr, p.firstChild)
+      }
+      setOrderedChild(pPr, 'w:spacing', PPR_ORDER, { 'w:line': String(line), 'w:lineRule': 'auto' })
+
+      Array.from(p.getElementsByTagName('w:r')).forEach((r) => {
+        let rPr = r.getElementsByTagName('w:rPr')[0]
+        if (!rPr) {
+          rPr = r.ownerDocument.createElementNS(W_NS, 'w:rPr')
+          r.insertBefore(rPr, r.firstChild)
+        }
+        setOrderedChild(rPr, 'w:rFonts', RPR_ORDER, { 'w:ascii': font, 'w:hAnsi': font, 'w:cs': font, 'w:eastAsia': font })
+        setOrderedChild(rPr, 'w:sz', RPR_ORDER, { 'w:val': String(size * 2) })
+        setOrderedChild(rPr, 'w:szCs', RPR_ORDER, { 'w:val': String(size * 2) })
+      })
+    })
+    return clone
+  })
+}
+
+// Splices the cover, content blocks, and rubric's raw XML nodes into one
+// document.xml, with plain page breaks between them and a bold heading
+// ahead of each content block and the rubric.
+function buildMergedDocumentXml({ coverNodes, contentBlocks, rubricNodes, headingFormat }) {
+  const shell = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="${W_NS}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body></w:body></w:document>`
+  const finalDoc = new DOMParser().parseFromString(shell, 'application/xml')
+  const body = finalDoc.getElementsByTagName('w:body')[0]
+
+  const appendNodes = (nodes) => nodes.forEach((node) => body.appendChild(finalDoc.importNode(node, true)))
+
+  function appendPageBreak() {
+    const p = finalDoc.createElementNS(W_NS, 'w:p')
+    const r = finalDoc.createElementNS(W_NS, 'w:r')
+    const br = finalDoc.createElementNS(W_NS, 'w:br')
+    br.setAttribute('w:type', 'page')
+    r.appendChild(br)
+    p.appendChild(r)
+    body.appendChild(p)
+  }
+
+  function appendHeading(text) {
+    const p = finalDoc.createElementNS(W_NS, 'w:p')
+    const r = finalDoc.createElementNS(W_NS, 'w:r')
+    const rPr = finalDoc.createElementNS(W_NS, 'w:rPr')
+    const b = finalDoc.createElementNS(W_NS, 'w:b')
+    const fonts = finalDoc.createElementNS(W_NS, 'w:rFonts')
+    fonts.setAttribute('w:ascii', headingFormat.font); fonts.setAttribute('w:hAnsi', headingFormat.font)
+    fonts.setAttribute('w:cs', headingFormat.font); fonts.setAttribute('w:eastAsia', headingFormat.font)
+    const sz = finalDoc.createElementNS(W_NS, 'w:sz')
+    sz.setAttribute('w:val', String(headingFormat.size * 2 + 4))
+    const szCs = finalDoc.createElementNS(W_NS, 'w:szCs')
+    szCs.setAttribute('w:val', String(headingFormat.size * 2 + 4))
+    rPr.appendChild(fonts); rPr.appendChild(b); rPr.appendChild(sz); rPr.appendChild(szCs)
+    r.appendChild(rPr)
+    const t = finalDoc.createElementNS(W_NS, 'w:t')
+    t.textContent = text
+    r.appendChild(t)
+    p.appendChild(r)
+    body.appendChild(p)
+  }
+
+  appendNodes(coverNodes)
+  contentBlocks.forEach((block) => {
+    appendPageBreak()
+    if (block.heading) appendHeading(block.heading)
+    appendNodes(block.nodes)
+  })
+  appendPageBreak()
+  appendHeading('Marking Rubric')
+  appendNodes(rubricNodes)
+
+  const sectPr = finalDoc.createElementNS(W_NS, 'w:sectPr')
+  const pgSz = finalDoc.createElementNS(W_NS, 'w:pgSz')
+  pgSz.setAttribute('w:w', '12240')
+  pgSz.setAttribute('w:h', '15840')
+  const pgMar = finalDoc.createElementNS(W_NS, 'w:pgMar')
+  pgMar.setAttribute('w:top', '1440'); pgMar.setAttribute('w:right', '1440')
+  pgMar.setAttribute('w:bottom', '1440'); pgMar.setAttribute('w:left', '1440')
+  pgMar.setAttribute('w:header', '720'); pgMar.setAttribute('w:footer', '720'); pgMar.setAttribute('w:gutter', '0')
+  sectPr.appendChild(pgSz)
+  sectPr.appendChild(pgMar)
+  body.appendChild(sectPr)
+
+  return new XMLSerializer().serializeToString(finalDoc)
+}
+
+// Building a valid .docx from scratch means getting every supporting part
+// right (styles, settings, font table, content types, relationships) — so
+// instead we let the docx library generate a throwaway minimal document
+// (which comes with all of that correctly in place) and then swap out just
+// its word/document.xml for the one we spliced together ourselves.
+async function buildDocxSkeletonZip() {
+  const placeholder = new Document({ sections: [{ children: [new Paragraph({ children: [new TextRun('')] })] }] })
+  const blob = await Packer.toBlob(placeholder)
+  return JSZip.loadAsync(await blob.arrayBuffer())
 }
 
 function DocSnippet({ paragraphs, compact }) {
@@ -92,8 +256,8 @@ function UploadSlot({ label, hint, file, onChange, small }) {
     setError(null)
     setBusy(true)
     try {
-      const paragraphs = await extractDocxParagraphs(picked)
-      onChange({ name: picked.name, paragraphs })
+      const { paragraphs, bodyNodes } = await extractDocxDocument(picked)
+      onChange({ name: picked.name, paragraphs, bodyNodes })
     } catch (err) {
       setError('Couldn’t read this file — make sure it’s a valid, unprotected .docx document.')
     } finally {
@@ -189,33 +353,25 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
   async function buildDocxBlob() {
     const { font, size, spacing } = resolvedFormat
     const line = spacing === 'Double' ? 480 : spacing === '1.5' ? 360 : 240
-    const children = []
-    const pushParagraphs = (paragraphs) => {
-      paragraphs.forEach((p) => children.push(new Paragraph({
-        spacing: { line, lineRule: 'auto' },
-        children: [new TextRun({ text: p.text, bold: !!p.heading, font, size: size * 2 })],
-      })))
-    }
-    const pushHeading = (text) => children.push(new Paragraph({
-      pageBreakBefore: children.length > 0,
-      spacing: { line, lineRule: 'auto' },
-      children: [new TextRun({ text, bold: true, font, size: size * 2 + 2 })],
-    }))
+    const headingFormat = { font, size }
 
-    pushParagraphs(coverFile.paragraphs)
-    if (contentMode === 'merged') {
-      pushParagraphs(mergedFile.paragraphs)
-    } else {
-      attachedSections.forEach((task, index) => {
-        pushHeading(`Section ${index + 1}: ${task.title} — ${task.owner}`)
-        pushParagraphs(sectionFiles[task.id].paragraphs)
-      })
-    }
-    pushHeading('Marking Rubric')
-    pushParagraphs(rubricFile.paragraphs)
+    const contentBlocks = contentMode === 'merged'
+      ? [{ nodes: applyContentFormatting(mergedFile.bodyNodes, { font, size, line }) }]
+      : attachedSections.map((task, index) => ({
+        heading: `Section ${index + 1}: ${task.title} — ${task.owner}`,
+        nodes: applyContentFormatting(sectionFiles[task.id].bodyNodes, { font, size, line }),
+      }))
 
-    const doc = new Document({ sections: [{ children }] })
-    return Packer.toBlob(doc)
+    const xml = buildMergedDocumentXml({
+      coverNodes: coverFile.bodyNodes,
+      contentBlocks,
+      rubricNodes: rubricFile.bodyNodes,
+      headingFormat,
+    })
+
+    const zip = await buildDocxSkeletonZip()
+    zip.file('word/document.xml', xml)
+    return zip.generateAsync({ type: 'blob' })
   }
 
   async function buildPdfBlob() {
@@ -353,7 +509,7 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
                 <div><strong>Marking rubric</strong><p>{rubricFile.name} · attached at the end</p><DocSnippet paragraphs={rubricFile.paragraphs} /></div>
               </div>
             </div>
-            <p className="small muted" style={{ marginTop: 16 }}>Formatting applied: {formatSummary}</p>
+            <p className="small muted" style={{ marginTop: 16 }}>Content formatting: {formatSummary}. Cover and rubric keep their original formatting.</p>
           </>
         ) : (
           <div className="compile-modal-grid">
@@ -383,7 +539,7 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
 
               <div>
                 <h2 className="section-title">Report cover & marking rubric</h2>
-                <p className="section-copy">Editable .docx files only — PDFs can't be compiled into the final document.</p>
+                <p className="section-copy">Editable .docx files only. These carry into the compiled document exactly as uploaded — layout, alignment, and formatting untouched.</p>
                 <div className="stack-sm" style={{ marginTop: 12 }}>
                   <UploadSlot label="Report cover" hint="Title page to place at the front" file={coverFile} onChange={setCoverFile} />
                   <UploadSlot label="Marking rubric" hint="Attached at the end of the document" file={rubricFile} onChange={setRubricFile} />
@@ -425,7 +581,7 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
 
               <div>
                 <h2 className="section-title">Formatting</h2>
-                <p className="section-copy" style={{ marginBottom: 12 }}>Applied uniformly across the compiled document.</p>
+                <p className="section-copy" style={{ marginBottom: 12 }}>Applied to the content only — the cover and rubric are left exactly as uploaded.</p>
                 <div className="choice-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                   {FORMAT_PRESETS.map((preset) => (
                     <button key={preset.key} type="button" className={`choice-card ${formatPreset === preset.key ? 'selected' : ''}`} onClick={() => setFormatPreset(preset.key)}>
@@ -448,7 +604,7 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
 
               <div className="notice">
                 <Info size={18} />
-                <div><strong>This is a prototype</strong><p>Compile assembles the outline and applies your chosen formatting rules — it doesn't rewrite anyone's writing.</p></div>
+                <div><strong>This is a prototype</strong><p>The .docx keeps your cover and rubric exactly as uploaded — only the content's font and spacing change. Embedded images and hyperlinks aren't carried over yet, and the PDF copy is a simplified plain-text version.</p></div>
               </div>
             </div>
 
