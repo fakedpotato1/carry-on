@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import JSZip from 'jszip'
+import { Document, Packer, Paragraph, TextRun } from 'docx'
+import { PDFDocument, StandardFonts } from 'pdf-lib'
 import {
   AlertTriangle, Check, CheckCircle2, Download, FileCheck2, FileText, Info, Layers, Loader2, Sparkles,
 } from 'lucide-react'
@@ -8,18 +10,37 @@ import Modal from './Modal'
 import StatusPill from './StatusPill'
 
 const FORMAT_PRESETS = [
-  { key: 'apa', label: 'Times New Roman · 12pt · Double-spaced', hint: 'Common APA-style default' },
-  { key: 'arial', label: 'Arial · 11pt · 1.5 spacing', hint: 'Common report/business style' },
-  { key: 'calibri', label: 'Calibri · 12pt · Single-spaced', hint: 'Compact, common default' },
+  { key: 'apa', label: 'Times New Roman · 12pt · Double-spaced', hint: 'Common APA-style default', font: 'Times New Roman', size: 12, spacing: 'Double' },
+  { key: 'arial', label: 'Arial · 11pt · 1.5 spacing', hint: 'Common report/business style', font: 'Arial', size: 11, spacing: '1.5' },
+  { key: 'calibri', label: 'Calibri · 12pt · Single-spaced', hint: 'Compact, common default', font: 'Calibri', size: 12, spacing: 'Single' },
   { key: 'custom', label: 'Custom…', hint: 'Set your own font, size, and spacing' },
 ]
 
 const LOADING_STEPS = ['Ordering sections by assignment', 'Applying the required font & spacing', 'Attaching cover and marking rubric']
 
+const PDF_REGULAR_FONTS = { 'Times New Roman': StandardFonts.TimesRoman, Arial: StandardFonts.Helvetica, Calibri: StandardFonts.Helvetica }
+const PDF_BOLD_FONTS = { 'Times New Roman': StandardFonts.TimesRomanBold, Arial: StandardFonts.HelveticaBold, Calibri: StandardFonts.HelveticaBold }
+
+function slugify(text) {
+  return text.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'report'
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
 // .docx files are zip archives — unzip with JSZip and read the raw paragraph
-// text out of word/document.xml so the preview shows the document's actual
-// content, not just its filename. This only works for editable, zip-based
-// .docx files, which is exactly why uploads are restricted to that format.
+// text out of word/document.xml so the preview sidebar and the final
+// download show the document's actual content, not just its filename. This
+// only works for editable, zip-based .docx files, which is exactly why
+// uploads are restricted to that format.
 async function extractDocxParagraphs(file) {
   const buffer = await file.arrayBuffer()
   const zip = await JSZip.loadAsync(buffer)
@@ -114,6 +135,7 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
   const [loadingStep, setLoadingStep] = useState(0)
   const [compiled, setCompiled] = useState(false)
   const [alsoPdf, setAlsoPdf] = useState(true)
+  const [downloading, setDownloading] = useState(false)
   const [toast, setToast] = useState(null)
   const [showMissingNotice, setShowMissingNotice] = useState(false)
 
@@ -129,9 +151,14 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
   if (!rubricFile) missingItems.push('a marking rubric')
   if (!contentReady) missingItems.push(contentMode === 'merged' ? 'the merged document' : 'at least one section')
 
+  const activePreset = FORMAT_PRESETS.find((preset) => preset.key === formatPreset)
+  const resolvedFormat = formatPreset === 'custom'
+    ? { font: customFont || 'Times New Roman', size: Number(customSize) || 12, spacing: customSpacing || 'Single' }
+    : { font: activePreset.font, size: activePreset.size, spacing: activePreset.spacing }
+
   const formatSummary = formatPreset === 'custom'
     ? `${customFont || 'Custom font'} · ${customSize || '—'}pt · ${customSpacing || '—'} spacing`
-    : FORMAT_PRESETS.find((preset) => preset.key === formatPreset)?.label
+    : activePreset?.label
 
   useEffect(() => {
     if (!compiling) return undefined
@@ -159,8 +186,122 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
     setCompiling(true)
   }
 
-  function handleDownload() {
-    setToast(alsoPdf ? 'Compiled report and PDF copy ready to download' : 'Compiled report ready to download')
+  async function buildDocxBlob() {
+    const { font, size, spacing } = resolvedFormat
+    const line = spacing === 'Double' ? 480 : spacing === '1.5' ? 360 : 240
+    const children = []
+    const pushParagraphs = (paragraphs) => {
+      paragraphs.forEach((p) => children.push(new Paragraph({
+        spacing: { line, lineRule: 'auto' },
+        children: [new TextRun({ text: p.text, bold: !!p.heading, font, size: size * 2 })],
+      })))
+    }
+    const pushHeading = (text) => children.push(new Paragraph({
+      pageBreakBefore: children.length > 0,
+      spacing: { line, lineRule: 'auto' },
+      children: [new TextRun({ text, bold: true, font, size: size * 2 + 2 })],
+    }))
+
+    pushParagraphs(coverFile.paragraphs)
+    if (contentMode === 'merged') {
+      pushParagraphs(mergedFile.paragraphs)
+    } else {
+      attachedSections.forEach((task, index) => {
+        pushHeading(`Section ${index + 1}: ${task.title} — ${task.owner}`)
+        pushParagraphs(sectionFiles[task.id].paragraphs)
+      })
+    }
+    pushHeading('Marking Rubric')
+    pushParagraphs(rubricFile.paragraphs)
+
+    const doc = new Document({ sections: [{ children }] })
+    return Packer.toBlob(doc)
+  }
+
+  async function buildPdfBlob() {
+    const { font: fontName, size, spacing } = resolvedFormat
+    const pdfDoc = await PDFDocument.create()
+    const regularFont = await pdfDoc.embedFont(PDF_REGULAR_FONTS[fontName] || StandardFonts.Helvetica)
+    const boldFont = await pdfDoc.embedFont(PDF_BOLD_FONTS[fontName] || StandardFonts.HelveticaBold)
+
+    const pageWidth = 612
+    const pageHeight = 792
+    const margin = 72
+    const maxWidth = pageWidth - margin * 2
+    const lineHeight = size * (spacing === 'Double' ? 2 : spacing === '1.5' ? 1.5 : 1.2)
+
+    let page = pdfDoc.addPage([pageWidth, pageHeight])
+    let y = pageHeight - margin
+
+    function wrapLines(text, useFont) {
+      const words = text.split(/\s+/)
+      const lines = []
+      let current = ''
+      words.forEach((word) => {
+        const attempt = current ? `${current} ${word}` : word
+        if (current && useFont.widthOfTextAtSize(attempt, size) > maxWidth) {
+          lines.push(current)
+          current = word
+        } else {
+          current = attempt
+        }
+      })
+      if (current) lines.push(current)
+      return lines
+    }
+
+    function drawParagraph(text, { bold = false, pageBreakBefore = false } = {}) {
+      if (pageBreakBefore) {
+        page = pdfDoc.addPage([pageWidth, pageHeight])
+        y = pageHeight - margin
+      }
+      const useFont = bold ? boldFont : regularFont
+      wrapLines(text, useFont).forEach((line) => {
+        if (y < margin + lineHeight) {
+          page = pdfDoc.addPage([pageWidth, pageHeight])
+          y = pageHeight - margin
+        }
+        page.drawText(line, { x: margin, y, size, font: useFont })
+        y -= lineHeight
+      })
+      y -= lineHeight * 0.3
+    }
+
+    const drawParagraphs = (paragraphs) => paragraphs.forEach((p) => drawParagraph(p.text, { bold: !!p.heading }))
+
+    drawParagraphs(coverFile.paragraphs)
+    if (contentMode === 'merged') {
+      drawParagraph('Content', { bold: true, pageBreakBefore: true })
+      drawParagraphs(mergedFile.paragraphs)
+    } else {
+      attachedSections.forEach((task, index) => {
+        drawParagraph(`Section ${index + 1}: ${task.title} — ${task.owner}`, { bold: true, pageBreakBefore: true })
+        drawParagraphs(sectionFiles[task.id].paragraphs)
+      })
+    }
+    drawParagraph('Marking Rubric', { bold: true, pageBreakBefore: true })
+    drawParagraphs(rubricFile.paragraphs)
+
+    const bytes = await pdfDoc.save()
+    return new Blob([bytes], { type: 'application/pdf' })
+  }
+
+  async function handleDownload() {
+    setDownloading(true)
+    try {
+      const baseName = `${slugify(project.title)}-compiled-report`
+      const docxBlob = await buildDocxBlob()
+      downloadBlob(docxBlob, `${baseName}.docx`)
+      if (alsoPdf) {
+        const pdfBlob = await buildPdfBlob()
+        downloadBlob(pdfBlob, `${baseName}.pdf`)
+      }
+      setToast(alsoPdf ? 'Compiled report and PDF copy downloaded' : 'Compiled report downloaded')
+    } catch (err) {
+      setToast('Something went wrong compiling the download — please try again')
+    } finally {
+      setDownloading(false)
+    }
   }
 
   const modalTitle = compiling ? 'Compiling report' : compiled ? 'Compiled report ready' : 'Compile Report'
@@ -300,6 +441,9 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
                     <div><label className="label" htmlFor="custom-spacing">Line spacing</label><select id="custom-spacing" className="field" value={customSpacing} onChange={(event) => setCustomSpacing(event.target.value)}><option>Single</option><option>1.5</option><option>Double</option></select></div>
                   </div>
                 )}
+                {formatPreset === 'custom' && !PDF_REGULAR_FONTS[customFont] && (
+                  <p className="small muted" style={{ marginTop: 8 }}>The PDF copy will substitute a close standard font for “{customFont || 'your custom font'}” — the .docx copy uses it exactly.</p>
+                )}
               </div>
 
               <div className="notice">
@@ -365,8 +509,8 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
             <>
               <label className="check-line" style={{ marginBottom: 14 }}><input type="checkbox" checked={alsoPdf} onChange={(event) => setAlsoPdf(event.target.checked)} /><span>Also export a PDF copy</span></label>
               <div className="button-row" style={{ justifyContent: 'flex-end' }}>
-                <Button variant="secondary" onClick={() => setCompiled(false)}>Make changes</Button>
-                <Button icon={Download} onClick={handleDownload}>Download compiled report</Button>
+                <Button variant="secondary" onClick={() => setCompiled(false)} disabled={downloading}>Make changes</Button>
+                <Button icon={downloading ? Loader2 : Download} onClick={handleDownload} disabled={downloading}>{downloading ? 'Preparing download…' : 'Download compiled report'}</Button>
               </div>
             </>
           ) : (
