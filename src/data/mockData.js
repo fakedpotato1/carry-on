@@ -1,10 +1,10 @@
 export const currentUser = { name: 'Ethan', role: 'Student' }
 
 export const team = [
-  { id: 1, name: 'Aisha Rahman', initials: 'AR', role: 'Team lead', workload: 72, confirmed: true, photo: '/img/girl-profile.jpg' },
-  { id: 2, name: 'Ben Lim', initials: 'BL', role: 'Research', workload: 48, confirmed: true, photo: '/img/boy-profile.jpg' },
-  { id: 3, name: 'Clara Wong', initials: 'CW', role: 'Data analysis', workload: 64, confirmed: true, photo: '/img/girl-profile.jpg' },
-  { id: 4, name: 'Daniel Tan', initials: 'DT', role: 'Discussion draft', workload: 26, confirmed: false, photo: '/img/boy-profile.jpg' },
+  { id: 1, name: 'Aisha Rahman', initials: 'AR', role: 'Team lead', skills: ['editing', 'methodology', 'coordination'], workload: 72, confirmed: true, photo: '/img/girl-profile.jpg' },
+  { id: 2, name: 'Ben Lim', initials: 'BL', role: 'Research', skills: ['research', 'writing', 'synthesis'], workload: 48, confirmed: true, photo: '/img/boy-profile.jpg' },
+  { id: 3, name: 'Clara Wong', initials: 'CW', role: 'Data analysis', skills: ['data analysis', 'visualisation', 'writing'], workload: 64, confirmed: true, photo: '/img/girl-profile.jpg' },
+  { id: 4, name: 'Daniel Tan', initials: 'DT', role: 'Discussion draft', skills: ['discussion', 'writing'], workload: 26, confirmed: false, photo: '/img/boy-profile.jpg' },
 ]
 
 export const project = {
@@ -79,8 +79,10 @@ export const initialTasks = [
   { id: 'methods', title: 'Methodology and limitations', owner: 'Aisha Rahman', deadline: '12 Sep', deliverable: '650-word methods section with limitations', weight: 12, status: 'Completed' },
   { id: 'analysis', title: 'Temperature data analysis', owner: 'Clara Wong', deadline: '11 Sep', deliverable: 'Clean dataset and three comparison charts', weight: 18, status: 'In Progress' },
   { id: 'survey', title: 'Student wellbeing survey summary', owner: 'Ben Lim', deadline: '13 Sep', deliverable: 'Theme summary with anonymised quotes', weight: 10, status: 'Due Soon' },
-  { id: 'discussion', title: 'Discussion and interventions', owner: 'Daniel Tan', deadline: '12 Sep', deliverable: '800-word discussion and three interventions', weight: 18, status: 'Potential Risk' },
+  { id: 'appendix', title: 'Appendix formatting', owner: 'Ben Lim', deadline: '15 Sep', deliverable: 'Format appendix headings and supporting tables', weight: 5, status: 'Not Started' },
+  { id: 'discussion', title: 'Discussion and interventions', owner: 'Daniel Tan', deadline: '12 Sep', deliverable: '800-word discussion and three interventions', skills: ['writing', 'synthesis'], weight: 18, status: 'Potential Risk' },
   { id: 'recommendations', title: 'Feasibility check', owner: 'Clara Wong', deadline: '14 Sep', deliverable: 'Cost and feasibility notes for each intervention', weight: 10, status: 'Blocked' },
+  { id: 'figure-notes', title: 'Figure notes and alt text', owner: 'Clara Wong', deadline: '15 Sep', deliverable: 'Write concise captions and accessible alt text for three figures', weight: 6, status: 'Not Started' },
   { id: 'references', title: 'Reference and figure audit', owner: 'Aisha Rahman', deadline: '15 Sep', deliverable: 'Verified citations, captions, and appendix links', weight: 7, status: 'Rebalanced', originalOwner: 'Daniel Tan' },
   { id: 'final', title: 'Final edit and submission', owner: 'Aisha Rahman', deadline: '16 Sep', deliverable: 'Integrated submission-ready report', weight: 10, status: 'Not Started' },
 ]

@@ -88,10 +88,22 @@ Connectors point toward the dependent task. Read a connector as: **the destinati
 - **Task status:** shown for every task in Active mode and limited to the three user-editable workflow choices. A special current state is explained above the choices.
 - **Evidence:** factual Google Docs/GitHub activity relevant to the task, separated from interpretation.
 - **Cross-check:** shown when the task is `Ready for Review`; includes `Meets` and `Needs revision`, reviewer comments, and an optional clearly labelled AI Advisory check.
-- **Potential Risk:** shows the factual pattern, the statement `This is not a final judgment`, and a recovery-first **Try Load Shift** action.
-- **Load Shift:** shows the urgent task, proposed new owner, before/after workload, manual owner override, and explicit confirmation. Original ownership remains visible after confirmation.
+- **Potential Risk:** shows the factual pattern, the statement `This is not a final judgment`, and a recovery-first **Ask AI to plan a task swap** action.
+- **Load Shift:** uses the AI policy in `design-system/loadshift/AI_REDISTRIBUTION_PHILOSOPHY.md`. It shows the dependency-critical task, the AI-selected recipient, a paired standalone task, before/after workload, and the recipient's Accept/Reject controls. There is no manual recipient selector.
 
-## 9. Accessibility and motion
+## 9. AI redistribution behavior
+
+- A task must already be in `Potential Risk` before the AI redistribution action appears.
+- The AI prioritizes the risk owner's unfinished task with the greatest direct and indirect downstream blocking effect.
+- The proposed recipient exchanges a lower-weight task with no incoming or outgoing dependency edges for the critical task.
+- The proposal is advisory and changes no ownership while it is `Waiting for Response`.
+- **Reject** records the response and automatically proposes the next safe recipient. It does not reassign either task.
+- **Accept task swap** opens a modal that names both changes. **Confirm and rebalance** applies both changes atomically.
+- Both accepted tasks become `Rebalanced` and retain their original owners, new owners, accepting member, paired task, and confirmation time.
+- If every safe recipient rejects, the flow stops and offers **Draft Lecturer Email**. No task is forced onto a teammate and no email is sent automatically.
+- The current prototype uses deterministic local mock data and does not claim a live AI decision.
+
+## 10. Accessibility and motion
 
 - The Details-heading status pill is a real menu button; its choices expose the selected state with `aria-checked`.
 - Each state always includes text and an icon; status never relies on color alone.
@@ -101,7 +113,7 @@ Connectors point toward the dependent task. Read a connector as: **the destinati
 - `prefers-reduced-motion: reduce` replaces moving dashes with a static dashed line.
 - Status updates are persistent in the visible node and announced through a polite live region or status message.
 
-## 10. Acceptance criteria
+## 11. Acceptance criteria
 
 - An Active-mode `Not Started` task can switch to `In Progress` and `Ready for Review`, and back to either ordinary workflow state.
 - Exactly three manual status choices are presented.
@@ -109,5 +121,9 @@ Connectors point toward the dependent task. Read a connector as: **the destinati
 - Incoming connectors update immediately: grey solid for `Not Started`; moving/static dashed sage for `In Progress` and `Ready for Review`.
 - `Ready for Review` reveals the Cross-check section without navigation or reload.
 - System-managed states are displayed but are not included as manual choices; a task in one of those states can still be moved into an ordinary workflow stage.
+- AI redistribution contains no manual recipient selector.
+- Rejecting the first proposal advances to the next safe recipient without changing ownership.
+- Accepting confirms and updates both sides of the task swap, preserving original ownership history.
+- Exhausting safe recipients keeps all owners unchanged and exposes the lecturer-review route.
 - Reloading the page restores mock data because status persistence is intentionally session-local.
 - Behavior and layout work at 375px, 768px, 1024px, and 1440px.

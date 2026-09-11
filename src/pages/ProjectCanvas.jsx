@@ -21,6 +21,7 @@ import TaskPanel from '../components/TaskPanel'
 import { currentUser, initialTasks, project, taskDependencies, team } from '../data/mockData'
 import { resolveCover, setStoredCover } from '../lib/covers'
 import { getAllProjects } from '../lib/projectsStore'
+import { createAiRebalancePlan, currentRebalanceCandidate, rejectRebalanceCandidate } from '../lib/rebalancePlanner'
 
 const nodeTypes = { task: TaskNode }
 const ownerColumns = team.map((member) => member.name)
@@ -92,6 +93,7 @@ export default function ProjectCanvas() {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [compileOpen, setCompileOpen] = useState(false)
   const [toast, setToast] = useState('')
+  const [rebalancePlan, setRebalancePlan] = useState(null)
 
   const [cover, setCover] = useState(() => resolveCover(currentProject))
   const [tags, setTags] = useState(currentProject.tags || [])
@@ -119,6 +121,12 @@ export default function ProjectCanvas() {
       return { ...edge, ...edgePresentation(targetStatus, mode) }
     }))
   }, [mode, nodes, setEdges])
+
+  useEffect(() => {
+    if (!toast) return undefined
+    const timeoutId = window.setTimeout(() => setToast(''), 3200)
+    return () => window.clearTimeout(timeoutId)
+  }, [toast])
 
   const onConnect = useCallback((connection) => setEdges((current) => addEdge({ ...connection, type: 'smoothstep', markerEnd: { type: MarkerType.ArrowClosed }, ...edgePresentation('Not Started', mode) }, current)), [mode, setEdges])
   const onReconnect = useCallback((oldEdge, connection) => setEdges((current) => reconnectEdge(oldEdge, connection, current)), [setEdges])
@@ -164,14 +172,86 @@ export default function ProjectCanvas() {
     setToast('Plan confirmed. The canvas is now active.')
   }
 
-  const rebalance = (newOwner) => {
-    if (!selectedTask) return
-    setNodes((current) => current.map((node) => node.id === selectedId ? {
-      ...node,
-      data: { ...node.data, task: { ...node.data.task, originalOwner: node.data.task.originalOwner || node.data.task.owner, owner: newOwner, status: 'Rebalanced' } },
-    } : node))
-    setToast(`Load Shift confirmed. Original ownership remains in ${selectedTask.title} history.`)
-  }
+  const startAiRebalance = useCallback((riskTaskId) => {
+    const plan = createAiRebalancePlan({
+      riskTaskId,
+      tasks: nodes.map((node) => node.data.task),
+      dependencies: edges.map((edge) => [edge.source, edge.target]),
+      members: team,
+    })
+    setRebalancePlan(plan)
+    const candidate = currentRebalanceCandidate(plan)
+    setToast(candidate
+      ? `AI task swap proposed to ${candidate.recipient}. No owner changes until they accept.`
+      : 'No safe task swap is available. Lecturer review is the next step.')
+  }, [edges, nodes])
+
+  const rejectAiRebalance = useCallback(() => {
+    setRebalancePlan((current) => {
+      const rejectedCandidate = currentRebalanceCandidate(current)
+      const next = rejectRebalanceCandidate(current)
+      const nextCandidate = currentRebalanceCandidate(next)
+      setToast(nextCandidate
+        ? `${rejectedCandidate.recipient} rejected the swap. AI proposed it to ${nextCandidate.recipient}.`
+        : 'All safe recipients declined. No tasks changed; lecturer review is recommended.')
+      return next
+    })
+  }, [])
+
+  const acceptAiRebalance = useCallback(() => {
+    const candidate = currentRebalanceCandidate(rebalancePlan)
+    if (!rebalancePlan || !candidate) return
+
+    const confirmedAt = '12 Sep 2026 · just now'
+    setNodes((current) => current.map((node) => {
+      const task = node.data.task
+      if (task.id === rebalancePlan.criticalTaskId) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            task: {
+              ...task,
+              originalOwner: task.originalOwner || task.owner,
+              owner: candidate.recipient,
+              status: 'Rebalanced',
+              rebalanceHistory: {
+                originallyAssignedTo: task.owner,
+                reassignedTo: candidate.recipient,
+                pairedTask: candidate.reliefTaskTitle,
+                confirmedBy: candidate.recipient,
+                confirmedAt,
+              },
+            },
+          },
+        }
+      }
+      if (task.id === candidate.reliefTaskId) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            task: {
+              ...task,
+              originalOwner: task.originalOwner || task.owner,
+              owner: rebalancePlan.riskOwner,
+              status: 'Rebalanced',
+              rebalanceHistory: {
+                originallyAssignedTo: task.owner,
+                reassignedTo: rebalancePlan.riskOwner,
+                pairedTask: rebalancePlan.criticalTaskTitle,
+                confirmedBy: candidate.recipient,
+                confirmedAt,
+              },
+            },
+          },
+        }
+      }
+      return node
+    }))
+    setRebalancePlan((current) => ({ ...current, status: 'accepted', acceptedBy: candidate.recipient, confirmedAt }))
+    setToast(`${candidate.recipient} accepted the AI-selected task swap. Both original owners remain in history.`)
+  }, [rebalancePlan, setNodes])
 
   const dependencies = selectedId ? edges.filter((edge) => edge.target === selectedId).map((edge) => nodes.find((node) => node.id === edge.source)?.data.task.title).filter(Boolean) : []
 
@@ -391,7 +471,7 @@ export default function ProjectCanvas() {
         </div>
       </section>
 
-      {selectedTask && <TaskPanel task={selectedTask} mode={mode} dependencies={dependencies} onClose={() => setSelectedId(null)} onUpdate={updateSelectedTask} onRebalance={rebalance} />}
+      {selectedTask && <TaskPanel task={selectedTask} mode={mode} dependencies={dependencies} lecturerEmailPath={`/project/${id}/lecturer-email`} rebalancePlan={rebalancePlan?.riskTaskId === selectedTask.id ? rebalancePlan : null} onClose={() => setSelectedId(null)} onUpdate={updateSelectedTask} onStartRebalance={startAiRebalance} onRejectRebalance={rejectAiRebalance} onAcceptRebalance={acceptAiRebalance} />}
 
       <Modal open={confirmOpen} title="Confirm and activate this plan?" onClose={() => setConfirmOpen(false)} actions={<><Button variant="secondary" onClick={() => setConfirmOpen(false)}>Keep editing</Button><Button icon={Check} onClick={activatePlan}>Confirm and activate</Button></>}>
         <p>This locks task editing and turns the same canvas into the live project view. Current owners, outcomes, dependencies, and node positions will remain visible.</p>

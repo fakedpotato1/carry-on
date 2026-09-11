@@ -3,6 +3,7 @@
 > Global source of truth for the Carry On coded prototype.
 > Before building a route, check `design-system/loadshift/pages/[route-name].md`.
 > A page file may override only the rules it names; all other rules remain inherited from this Master.
+> AI task swaps also follow `design-system/loadshift/AI_REDISTRIBUTION_PHILOSOPHY.md`.
 
 **Project:** Carry On
 **Generated:** 2026-09-06  

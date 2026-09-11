@@ -13,7 +13,8 @@
     "qa:task-status": "node qa/verify-task-status.mjs",
     "qa:calendar": "node qa/verify-calendar.mjs",
     "qa:responsive": "node qa/verify-responsive.mjs",
-    "qa:brand": "node qa/verify-brand.mjs"
+    "qa:brand": "node qa/verify-brand.mjs",
+    "qa:rebalance": "node qa/verify-rebalance-planner.mjs"
   },
   "dependencies": {
     "@pdf-lib/standard-fonts": "^1.0.0",
