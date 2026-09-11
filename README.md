@@ -1,6 +1,6 @@
-# LoadShift Prototype
+# Carry On Prototype
 
-LoadShift is a React and Vite prototype for planning group assignments, reviewing contribution evidence, and confirming fair workload changes through an interactive project canvas.
+Carry On is a React and Vite prototype for planning group assignments, reviewing contribution evidence, and confirming fair workload changes through an interactive project canvas.
 
 ## Prerequisites
 

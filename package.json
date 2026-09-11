@@ -1,5 +1,5 @@
 {
-  "name": "loadshift-prototype",
+  "name": "carry-on-prototype",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -12,7 +12,8 @@
     "qa:canvas-dates": "node qa/verify-canvas-dates.mjs",
     "qa:task-status": "node qa/verify-task-status.mjs",
     "qa:calendar": "node qa/verify-calendar.mjs",
-    "qa:responsive": "node qa/verify-responsive.mjs"
+    "qa:responsive": "node qa/verify-responsive.mjs",
+    "qa:brand": "node qa/verify-brand.mjs"
   },
   "dependencies": {
     "@pdf-lib/standard-fonts": "^1.0.0",

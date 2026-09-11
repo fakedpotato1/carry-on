@@ -6,7 +6,7 @@ const DELETED_PROJECTS_KEY = 'loadshift-deleted-projects'
 // Fired on window whenever the saved project list changes (create or
 // delete), so any component showing a project list — sidebar, dashboard,
 // all-projects grid — can refresh itself without a full page reload.
-export const PROJECTS_CHANGED_EVENT = 'loadshift-projects-changed'
+export const PROJECTS_CHANGED_EVENT = 'carry-on-projects-changed'
 
 function notifyProjectsChanged() {
   if (typeof window !== 'undefined') window.dispatchEvent(new Event(PROJECTS_CHANGED_EVENT))

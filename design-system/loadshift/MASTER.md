@@ -1,10 +1,10 @@
-# LoadShift Design System — Master
+# Carry On Design System — Master
 
-> Global source of truth for the LoadShift coded prototype.
+> Global source of truth for the Carry On coded prototype.
 > Before building a route, check `design-system/loadshift/pages/[route-name].md`.
 > A page file may override only the rules it names; all other rules remain inherited from this Master.
 
-**Project:** LoadShift  
+**Project:** Carry On
 **Generated:** 2026-09-06  
 **Stack target:** React + Tailwind CSS + Vite  
 **Product posture:** Supportive group-assignment recovery tool; evidence-aware, human-controlled, and burnout-preventive. Never frame the interface as surveillance, punishment, or a final judgment of a student.

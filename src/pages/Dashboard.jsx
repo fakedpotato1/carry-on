@@ -174,7 +174,7 @@ export default function Dashboard() {
         </>}
       >
         <p className="muted">
-          {pendingDelete ? <>“{pendingDelete.title}” and its canvas, tasks, and evidence will be removed from LoadShift. This can't be undone.</> : null}
+          {pendingDelete ? <>“{pendingDelete.title}” and its canvas, tasks, and evidence will be removed from Carry On. This can't be undone.</> : null}
         </p>
       </Modal>
     </div>

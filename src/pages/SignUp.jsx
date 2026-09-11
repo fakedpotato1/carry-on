@@ -114,7 +114,7 @@ export default function SignUp() {
         <Link to="/" className="signup-brand">
           <span className="signup-brand-mark"><Waves size={22} aria-hidden="true" /></span>
           <span className="signup-brand-text">
-            <strong>LoadShift</strong>
+            <strong>Carry On</strong>
             <small>Group work, made lighter</small>
           </span>
         </Link>
@@ -141,7 +141,7 @@ export default function SignUp() {
           <Step>
             <div className="signup-head-copy">
               <h2>What&rsquo;s your name?</h2>
-              <p className="step-subcopy">This is how your team will see you across LoadShift.</p>
+              <p className="step-subcopy">This is how your team will see you across Carry On.</p>
             </div>
             <div className="field-group field-icon">
               <User size={17} className="field-icon-glyph" aria-hidden="true" />

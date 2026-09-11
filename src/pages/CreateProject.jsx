@@ -62,7 +62,7 @@ export default function CreateProject() {
     setLoading(true)
   }
 
-  if (loading) return <div className="page"><div className="page-narrow"><Card className="loading-panel" aria-live="polite"><div><div className="spinner" aria-hidden="true" /><h1 className="page-title" style={{ marginTop: 22 }}>Analyzing requirements</h1><p className="page-description">LoadShift is preparing an editable draft. Nothing becomes active without team confirmation.</p><div className="loading-steps">{['Reading the brief and rubric', 'Mapping outcomes and dependencies', 'Balancing suggested responsibilities'].map((label, index) => <div key={label} className={`loading-step ${step >= index ? 'done' : ''}`}>{step >= index ? <Check size={18} /> : <span className="loading-dot" />}{label}</div>)}</div></div></Card></div></div>
+  if (loading) return <div className="page"><div className="page-narrow"><Card className="loading-panel" aria-live="polite"><div><div className="spinner" aria-hidden="true" /><h1 className="page-title" style={{ marginTop: 22 }}>Analyzing requirements</h1><p className="page-description">Carry On is preparing an editable draft. Nothing becomes active without team confirmation.</p><div className="loading-steps">{['Reading the brief and rubric', 'Mapping outcomes and dependencies', 'Balancing suggested responsibilities'].map((label, index) => <div key={label} className={`loading-step ${step >= index ? 'done' : ''}`}>{step >= index ? <Check size={18} /> : <span className="loading-dot" />}{label}</div>)}</div></div></Card></div></div>
 
   return (
     <div className="page"><div className="page-narrow">

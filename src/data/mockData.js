@@ -10,7 +10,7 @@ export const team = [
 export const project = {
   id: 'urban-heat', title: 'Urban Heat & Student Wellbeing', module: 'ENV2104 · Research Methods', type: 'Report',
   deadline: '18 Sep 2026, 11:59 PM', daysLeft: 12, progress: 68, atRisk: false,
-  document: 'Urban Heat Group Report — Working Draft', repository: 'loadshift-team/urban-heat-analysis',
+  document: 'Urban Heat Group Report — Working Draft', repository: 'carry-on-team/urban-heat-analysis',
   description: 'Investigating the impact of urban heat on student wellbeing and proposing data-driven solutions for a healthier campus environment.',
   coverImage: '/covers/urban-heat.jpg',
   startDate: '1 Sep 2026',
@@ -93,7 +93,7 @@ export const taskDependencies = [
 export const activity = [
   { time: 'Today, 10:42 AM', actor: 'Clara', detail: 'Added campus-zone comparison chart to the shared document.', source: 'Google Docs' },
   { time: 'Today, 9:15 AM', actor: 'Aisha', detail: 'Resolved two methodology comments and updated the sampling note.', source: 'Google Docs' },
-  { time: 'Yesterday, 6:30 PM', actor: 'LoadShift', detail: 'Recorded the second unanswered task reminder for “Discussion and interventions”.', source: 'Reminder log' },
+  { time: 'Yesterday, 6:30 PM', actor: 'Carry On', detail: 'Recorded the second unanswered task reminder for “Discussion and interventions”.', source: 'Reminder log' },
   { time: '4 Sep, 3:08 PM', actor: 'Ben', detail: 'Marked the literature synthesis ready for team review.', source: 'Team update' },
 ]
 

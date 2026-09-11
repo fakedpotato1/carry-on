@@ -661,7 +661,7 @@ export default function CompileReportModal({ open, onClose, project, tasks }) {
                 <div className="choice-grid" style={{ marginTop: 12 }}>
                   <button type="button" className={`choice-card ${contentMode === 'separate' ? 'selected' : ''}`} onClick={() => setContentMode('separate')}>
                     <strong>Compile from each section</strong>
-                    <span>Everyone uploads their own part; LoadShift orders them by section.</span>
+                    <span>Everyone uploads their own part; Carry On orders them by section.</span>
                   </button>
                   <button type="button" className={`choice-card ${contentMode === 'merged' ? 'selected' : ''}`} onClick={() => setContentMode('merged')}>
                     <strong>Already merged into one doc</strong>

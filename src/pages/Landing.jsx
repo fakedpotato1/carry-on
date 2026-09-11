@@ -34,7 +34,7 @@ export default function Landing() {
         <header className="landing-nav">
           <Link to="/" className="landing-brand">
             <span className="landing-brand-mark"><Waves size={26} aria-hidden="true" /></span>
-            <span className="landing-brand-name">Load Shift</span>
+            <span className="landing-brand-name">Carry On</span>
           </Link>
 
           <div className="landing-nav-actions">

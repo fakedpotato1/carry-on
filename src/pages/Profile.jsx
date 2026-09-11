@@ -21,7 +21,7 @@ export default function Profile() {
 
   return (
     <div className="page page-narrow">
-      <PageHeader eyebrow="Profile" title="Your account" description="Everything LoadShift knows about you and the teams you're working with." />
+      <PageHeader eyebrow="Profile" title="Your account" description="Everything Carry On knows about you and the teams you're working with." />
 
       <Card className="profile-header-card">
         <div className="profile-header-row">
